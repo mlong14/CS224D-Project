@@ -5,7 +5,7 @@
 %\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
 
 
-\title{Formatting Instructions for NIPS 2013}
+\title{  Extracting and Aggregating Aspect-Level Sentiment from Product Reviews  }
 
 
 \author{
@@ -55,20 +55,88 @@ paragraph.
 
 \section{Introduction}
 
+In today's e-commercialized society, the consumer not only has access to online stores through which she might purchase anything she desires, but she also has unprecedented access to a deluge of information---most notably, product reviews written by other consumers---with which she can make her decision. Unfortunately, sifting through hundreds of reviews across tens of different websites to acquire specific information about the product and its important attributes (e.g. \textit{battery life} for electronics) is a time-consuming chore. Because of this, there has been much recent research tackling the two separate but connected components of this problem: (1) entity-level or aspect-specific sentiment analysis, and (2) summarization and aggregation of reviews.
 
-This section introduces your problem, and the overall plan for approaching your problem
+Within the context of a product review, the first component, \textit{aspect-specific sentiment analysis}, involves identifying individual ``aspects" (which could be the product itself, or attributes of the product), and subsequently identifying the sentiment---positive, neutral, or negative judgments---associated with those aspects [1-5]. Previous methods have relied on graphical models (e.g. Latent Dirchlet Analysis [1-3], Conditional Random Fields [4]), or directly modeling sentiment compositionality [5]. In this paper, we propose extending recent successful advances in deep learning [6-7] to address this problem. In particular, we seek to improve and extend the work in [7], who propose several deep learning architectures like the Recursive Neural Tensor Network (RNTN) to extract aspect and sentiment in a single step. Most of the previous work [1-2,4-7], except [3], are supervised methods that require labeled aspects/sentiment for training. We propose using unsupervised methods to generate candidate aspects via word vector representations, followed by simultaneous extraction of aspect and sentiment.
+
+The second problem involves aggregation of reviews, or constructing a \textit{meta-review}. Previous work [8-10] has shown that simple averaging of the ``stars" of reviews for an individual product is sub-optimal. Here we propose a deep learning architecture to aggregate the previously identified aspect-specific sentiment across multiple sentences within a review, and furthermore, to aggregate these sentiment across multiple reviews.
+
+
+
+
+
+
+
+
+
 
 \section{Problem Statement}
 Describe your problem precisely specifying the dataset to be used, expected results and evaluation
 
+Amazon Reviews [1]
+
+
 
 \section{Technical Approach and Models} 
+
+\begin{enumerate}
+\item Run word2vec to get an embedded representation
+\item Start with a small (hand-generated) seed list of attributes (``Entities").
+	\begin{itemize}
+	\item Build Construction
+	\item Price
+	\item Battery Life
+	\item ...
+	\end{itemize}
+\item Use the word2vec representation to find similar words/phrases. (This process might also generate adjectives or common phrases used to describe this particular attribute.)
+	\begin{itemize}
+	\item Build Construction, Build Quality
+	\item Price, Cost, (Expensive, Cheap, Affordable)
+	\item Battery Life, (Long-Lasting), Charging
+	\item ...
+	\end{itemize}
+	{\it Desmond and Shane's discussion: it might be counter-intuitive but beneficial to treat Expensive as an attribute (for Price). The NER model will be doing something ``wrong" in labeling an adjective as an entity, but you'll be able to capture the price information when someone says ``expensive".}
+\item Use this list in an NER model to teach it to learn to recognize attributes as a new class of entities.
+\item Next, given that attributes are labelled in the text, we can run sentiment analysis.
+        \begin{itemize}
+	\item Most naively, we can just label all the unigrams. Then, we can just take every sentence, find all the attributes listed in that sentence, and then associate the sentiment of the entire sentence to those attributes.
+	\item More sophisticated models would involve looking at local context and compositionality. Thus, we could run a window (instead of the whole sentence), calculate the sentiment associated with the words in the window (either at the unigram level or at the subtree level, a la Socher et al), and associate that sentiment with the attribute found within the window.
+	\end{itemize}
+\item Then we would have to sum up the 
+\item The output would be a (long and sparse) attribute vector where the $i$-th element is the sentiment associated with the $i$-th attribute:
+        \begin{itemize}
+	\item E.g. attribute$_1$ = build quality, attribute$_2$ = cost
+	\item If product has good build quality but is very expensive, then \\
+	outputAttributeVector = [4, 0, $\ldots$] (scale from 0-4)
+	\end{itemize}
+\item Visualization of output vector.
+\end{enumerate}
+
+When one is planning a purchase, one usually has to spend time sifting through multiple reviews across many different websites, distilling the information to get (1) ratings for individual attributes (“battery life”), and (2) an overall rating / summary of the information, presented in a “meta-review”. 
+Four separate sub-problems:
+1) Doing POS-tagging and named entity recognition for various product attributes (e.g. battery life, weight, portability, etc) (we’ll probably use off-the-shelf (Stanford NLP) tools for this problem)
+2) Train word2vec representations of said attributes and clustering them (e.g. “build quality” and “construction” can refer to the same attribute)
+3) Extract sentiment based on product attributes
+4) Aggregate this information across multiple reviews (creating a “meta-review”)
+A potential application allows for quick comparisons of various products based on user-generated reviews. Say you are purchasing an Android tablet and are looking at the Samsung Galaxy Tab 4, Nexus 9, Nvidia Shield and other similar products, our system would allow users to identify key attributes of each product (e.g. screen resolution, build quality, battery life, etc) and their associated sentiment, i.e. how positively or negatively do people feel about each product attribute.
+Given the constraints of a class project, we will be limiting our dataset to reviews of electronic consumer products.
+
+
+POS and NER: Using off-the-shelf tools
+Clustering entities: cluster learned word2vec representations (e.g. K-NN or distribution-based clustering methods)
+Extract entity-level sentiment: modifying and extending Socher et al (2013)’s model via calculating the sentiment in a window/neighborhood around the named entity, up to the whole sentence.
+Aggregation of sentiment (across multiple sentences, and across multiple reviews): this is perhaps where deep-learning might be extremely useful, but as yet we do not know enough about various deep learning architectures to do this optimally. There are several papers that we identified that might give us some insight (although they don’t use deep learning)
+
 
 Describe the methods you intend to apply to solve the given problem
 
 \section{Intermediate/Preliminary Experiments \& Results}
 
 State and evaluate your results up to the milestone
+
+
+We can evaluate the attribute sentiments against the formal ratings provided by CNET or consumer reports. An aggregation of sentiment for individual reviews can also be compared against a user’s overall rating of the product.
+We can evaluate the attribute clustering using standard cluster metrics. A projection to a 2-D space for visualization would also be valuable.
 
 
 %\begin{figure}[h]
@@ -101,19 +169,46 @@ State and evaluate your results up to the milestone
 \subsubsection*{References} % chronological. any citation style is acceptable, as long as it's consistent. Use APA
 
 \small{
-%[1] Alexander, J.A. \& Mozer, M.C. (1995) Template-based algorithms
-%for connectionist rule extraction. In G. Tesauro, D. S. Touretzky
-%and T.K. Leen (eds.), {\it Advances in Neural Information Processing
-%Systems 7}, pp. 609-616. Cambridge, MA: MIT Press.
 
-%[2] Bower, J.M. \& Beeman, D. (1995) {\it The Book of GENESIS: Exploring
-%Realistic Neural Models with the GEneral NEural SImulation System.}
-%New York: TELOS/Springer-Verlag.
+[1] Titov, I., \& McDonald, R. T. (2008). A Joint Model of Text and Aspect Ratings for Sentiment Summarization. In {\it ACL} (Vol. 8, pp. 308-316).
 
-%[3] Hasselmo, M.E., Schnell, E. \& Barkai, E. (1995) Dynamics of learning
-%and recall at excitatory recurrent synapses and cholinergic modulation
-%in rat hippocampal region CA3. {\it Journal of Neuroscience}
-%{\bf 15}(7):5249-5262.
+[2] Jo, Y., \& Oh, A. H. (2011). Aspect and sentiment unification model for online review analysis. In Proceedings of the fourth ACM international conference on Web search and data mining (pp. 815-824). ACM.
+
+[3] Brody, S., \& Elhadad, N. (2010). An unsupervised aspect-sentiment model for online reviews. In {\it Human Language Technologies: The 2010 Annual Conference of the North American Chapter of the Association for Computational Linguistics} (pp. 804-812). Association for Computational Linguistics.
+
+[4] Engonopoulos, N., Lazaridou, A., Paliouras, G., \& Chandrinos, K. (2011). ELS: a word-level method for entity-level sentiment analysis. In {\it Proceedings of the International Conference on Web Intelligence, Mining and Semantics}
+
+
+[5] Moilanen, K., \& Pulman, S. (2009). Multi-entity Sentiment Scoring. In {\it Recent Advances in NLP} (pp. 258-263).
+
+[6] Socher, R., Perelygin, A., Wu, J. Y., Chuang, J., Manning, C. D., Ng, A. Y., \& Potts, C. (2013). Recursive deep models for semantic compositionality over a sentiment treebank. In {\it Proceedings of the conference on Empirical Methods in Natural Language Processing (EMNLP)} (Vol. 1631, p. 1642).
+
+[7] Lakkaraju, H., Socher, R, \& Manning, C. (2014). Aspect Specific Sentiment Analysis using Hierarchical Deep Learning. {\it NIPS Workshop on Deep Learning and Representation Learning}
+
+
+
+[8] Ghose, A., \& Ipeirotis, P. G. (2007). Designing novel review ranking systems: predicting the usefulness and impact of reviews. In {\it Proceedings of the Ninth international conference on Electronic commerce} (pp. 303-310). ACM.
+
+[9] Chen, P. Y., Dhanasobhon, S., \& Smith, M. D. (2008). All reviews are not created equal: The disaggregate impact of reviews and reviewers at Amazon.com. Available at SSRN: http://ssrn.com/abstract=918083 
+
+[10] Dai, W., Jin, G. Z., Lee, J., \& Luca, M. (2012). Optimal aggregation of consumer ratings: an application to Yelp.com (No. w18567). National Bureau of Economic Research. 
+
+
+[11] McAuley, J., Targett, C., Shi, J., \& van den Hengel, A. (2015). Image-based recommendations on styles and substitutes. {\it ACM Special Interest Group on Information Retrieval (SIGIR)}
+
+
+
+%% this paper isn't that relevant. it's an evaluation system.
+%[2] Ward, C. B., Choi, Y., Skiena, S., \& Xavier, E. C. (2011). Empath: A framework for evaluating entity-level sentiment analysis. In {\it Emerging Technologies for a Smarter World (CEWIT), 2011 8th International Conference \& Expo}. (pp. 1-6). IEEE.
+
+
+%
+%Wang, H., Lu, Y., & Zhai, C. (2010, July). Latent aspect rating analysis on review text data: a rating regression approach. In Proceedings of the 16th ACM SIGKDD international conference on Knowledge discovery and data mining (pp. 783-792). ACM.
+%
+%Yatani, K., Novati, M., Trusty, A., & Truong, K. N. (2011, May). Review spotlight: a user interface for summarizing user-generated reviews using adjective-noun word pairs. In Proceedings of the SIGCHI Conference on Human Factors in Computing Systems (pp. 1541-1550). ACM.
+
+
+
 }
 
 \end{document}
