@@ -54,7 +54,7 @@ Previous work in aspect-level sentiment analysis---identifying the sentiment ass
 
 In today's e-commercialized society, the consumer not only has access to online stores through which she might purchase anything she desires, but she also has unprecedented access to a deluge of information---most notably, product reviews written by other consumers---with which she can make her decision. Unfortunately, sifting through hundreds of reviews across tens of different websites to acquire specific information about the product and its important attributes (e.g. \textit{battery life} for electronics) is a time-consuming chore. Because of this, there has been much recent research tackling the two separate but connected components of this problem: (1) entity-level or aspect-specific sentiment analysis, and (2) summarization and aggregation of reviews.
 
-Within the context of a product review, the first component, \textit{aspect-specific sentiment analysis}, involves identifying individual ``aspects" (which could be the product itself, or attributes of the product), and subsequently identifying the sentiment---positive, neutral, or negative judgments---associated with those aspects [1-5]. Previous methods have relied on graphical models (e.g. Latent Dirchlet Analysis [1-3], Conditional Random Fields [4]), or directly modeling sentiment compositionality [5]. In this paper, we propose extending recent successful advances in deep learning [6-7] to address this problem. In particular, we seek to improve and extend the work in [7], who propose several deep learning architectures like the Recursive Neural Tensor Network (RNTN) to extract aspect and sentiment in a single step. Most of the previous work [1-2,4-7], except [3], are supervised methods that require labeled aspects/sentiment for training. We propose using unsupervised methods to generate candidate aspects via word vector representations, followed by simultaneous extraction of aspect and sentiment.
+Within the context of a product review, the first component, \textit{aspect-specific sentiment analysis}, involves identifying individual ``aspects" (which could be the product itself, or attributes of the product), and subsequently identifying the sentiment---positive, neutral, or negative judgments---associated with those aspects [1-5]. Previous methods have relied on graphical models (e.g. Latent Dirichlet Allocation [1-3], Conditional Random Fields [4]), or directly modeling sentiment compositionality [5]. In this paper, we propose extending recent successful advances in deep learning [6-7] to address this problem. In particular, we seek to improve and extend the work in [7], who propose using several deep learning architectures like the Recursive Neural Tensor Network (RNTN) to extract aspect and sentiment in a single step. Most of the previous work mentioned [1-2,4-7] (except [3]) are supervised methods that require labeled aspects-sentiment pairs for training. We propose using unsupervised methods to generate candidate aspects via word vector representations, followed by simultaneous extraction of aspect and sentiment.
 
 The second problem involves aggregation of reviews, or constructing a \textit{meta-review}. Previous work [8-10] has shown that simple averaging of the ``stars" of reviews for an individual product is sub-optimal. Here we propose a deep learning architecture to aggregate the previously identified aspect-specific sentiment across multiple sentences within a review, and furthermore, to aggregate these sentiment across multiple reviews.
 
@@ -68,12 +68,35 @@ The second problem involves aggregation of reviews, or constructing a \textit{me
 
 
 \section{Problem Statement}
-Describe your problem precisely specifying the dataset to be used, expected results and evaluation
+%Describe your problem precisely specifying the dataset to be used, expected results and evaluation
 
+Our proposed workflow can be divided into three main parts: {\bf Aspect Identification}, {\bf Aspect-Specific Sentiment Extraction}, and {\bf Sentiment Aggregation}. See Fig. \ref{workflow} for an illustration.
 
+\subsection{Aspect Identification}
 
-Amazon Reviews of Electronics [11]
+\textbf{Problem}: Given an {\bf unlabeled} set of product reviews (for a single product), identify clusters $\{C_1,\ldots, C_k\}$, where the (weighted) centroid of cluster $i$ would represent aspect $i$, and member words of cluster $i$ would represent synonyms that map onto the same aspect $i$.
 
+\textbf{Dataset}: Amazon Reviews of Electronics [11] {\it \bf (fill in how many reviews)}.
+
+\textbf{Evaluation}: {\it \bf (fill in)}.
+
+\subsection{Aspect-Specific Sentiment Extraction}
+
+\textbf{Input}: From above, we can now generate aspect labels for product reviews. We will then use an existing trained sentiment analysis model to generate sentiment labels for each token / unigram.
+
+\textbf{Problem}: Given a set of product reviews (for a single product), identify (aspect, aspect-related sentiment) tuples. This is similar to [7], and we intend to expand upon the model in [7].
+
+\textbf{Evaluation}: {\it \bf (fill in)}.
+
+\subsection{Aspect-Specific Sentiment Aggregation}
+
+\textbf{Input}: From above, we now have sets of (aspect, aspect-related sentiment) tuples which come from multiple sentences within a review, and across multiple reviews, for the same product.
+
+\textbf{Dataset}: We propose scraping some product reviews off Consumer Reports (or similar sites like DPReview for Cameras) to collect a small, labeled dataset. These websites provide professionally produced (aspect, aspect-related sentiment) ratings, which we can assume to be the gold standard. Assume the final product is a vector where the $i$-th element is the sentiment for aspect $i$.
+
+\textbf{Problem}: Given a set of (aspect, aspect-related sentiment) tuples (for a single product), optimally summarize them into a ``meta-review". Our dataset will provide a small set of labeled summaries, and we plan on using a semi-supervised recursive neural network architecture (or a variant) to learn how to compositionally combine individual (aspect, aspect-related sentiment) tuples to generate a single vector of summarized aspect-related sentiment.
+
+\textbf{Evaluation}: We will set aside some of the labeled gold standard meta-reviews into dev and test sets. We will report accuracy on the dev sets (e.g. Frobenius distance between the predicted and actual sentiment vectors) as a function of training set-size (done in a semi-supervised manner) and other hyper parameters. Finally we will report accuracy on the test set.
 
 
 \section{Technical Approach and Models} 
@@ -84,13 +107,15 @@ Amazon Reviews of Electronics [11]
 \includegraphics[width=1\columnwidth]{workflow.png}
 \end{center}
 \caption{Proposed Workflow. Boxed items are processes, while non-boxed items are outputs. The left half of the diagram details unsupervised aspect identification, while the right half of the diagram involves aspect-specific sentiment extraction, summarization and visualization. Except for the Sentiment Labeling and Visualization processes, every other process involves deep learning.}
+\label{workflow}
 \end{figure}
 
-Our proposed workflow can be divided into three main parts: {\bf Aspect Identification}, {\bf Aspect-Specific Sentiment Extraction}, and {\bf Sentiment Aggregation}.
+
 
 \subsection{Aspect Identification}
 
-The first part involves an unsupervised approach to generating aspects. For example, for a given electronic item such as a mobile phone, relevant aspects could be the battery life, screen size, weight, cost, and more. Not all of these aspects are relevant across all electronic items: for a computer, weight might be less of an issue, while screen size might be moot for a screen-less music player.
+The first part of the project involves an unsupervised approach to generating aspects. For example, for a given electronic item such as a mobile phone, relevant aspects could be the battery life, screen size, weight, cost, and more. Not all aspects are relevant across all electronic items: for a computer, weight might not be an issue, and screen size might be moot for headphones.
+
 First, we would run word2vec to obtain a word vector representation of the data. Then, we would perform k-means clustering (or some other clustering algorithm) on the word2vec representations. This would generate clusters of similar words, such as: \{build construction, build quality, durability, etc\}. We can then define the weighted centroid of these clusters as {\bf Aspects}, and the other words in the cluster as relevant synonyms. This allows us to then label all the aspect-words in the dataset.
 
 
