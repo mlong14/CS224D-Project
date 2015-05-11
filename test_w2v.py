@@ -16,7 +16,6 @@ import numpy as np
 logging.basicConfig(level=logging.INFO)
 
 def testW2V():
-	#model = Word2Vec.load(os.path.join(settings.MODEL_ROOT,'word2vec2'))
 	model = gensim.models.word2vec.Word2Vec.load(os.path.join(settings.MODEL_ROOT,'word2vec2'))
 
 	print model.most_similar(positive=['tech','support'])
