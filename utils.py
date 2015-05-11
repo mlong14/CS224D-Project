@@ -9,6 +9,14 @@ from datetime import datetime
 
 logging.basicConfig(level=logging.INFO)
 
+class SentenceStream(object):
+        def __init__(self, filename):
+                self.filename = filename
+        def __iter__(self):
+                logging.info("begin streaming corpus")
+
+                for line in open(self.filename,'r'):
+                        yield line.split()
 
 def unzip_files():
 
@@ -53,8 +61,6 @@ def read_file(limit = None):
 
 	logging.info("reviews read: {0}".format(rev_count))
 	return sentences
-
-
 
 def process(string):
 	exclude = set(['[','^',']','\"','(','&','!','\'',':','+',')',';','?','.','-','+','#'])
