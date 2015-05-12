@@ -6,17 +6,27 @@ import simplejson as json
 
 import settings
 from datetime import datetime
+import nltk.data
 
 logging.basicConfig(level=logging.INFO)
 
 class SentenceStream(object):
         def __init__(self, filename):
                 self.filename = filename
+		self.tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
         def __iter__(self):
                 logging.info("begin streaming corpus")
 
-                for line in open(self.filename,'r'):
-                        yield line.split()
+                for review in open(self.filename,'r'):
+			data = json.loads(review)
+			text = data['reviewText']
+			raw_sentences = self.tokenizer.tokenize(text.strip())
+
+			for raw_sentence in raw_sentences:
+				if len(raw_sentence) > 0:
+					raw_sentence = re.sub("[0-9]","DG",raw_sentence)
+					raw_sentence = re.sub("[^a-zA-Z]"," ", raw_sentence)
+					yield process(raw_sentence).split()
 
 def unzip_files():
 

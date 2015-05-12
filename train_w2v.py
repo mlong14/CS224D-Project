@@ -3,15 +3,11 @@ import logging
 import re
 import gzip
 import simplejson as json
-
 import settings
-from datetime import datetime
-
-from utils import SentenceStream
-
 import gensim
-
 import numpy as np
+from datetime import datetime
+from utils import SentenceStream
 
 logging.basicConfig(level=logging.INFO)
 
