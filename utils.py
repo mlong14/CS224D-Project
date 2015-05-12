@@ -24,8 +24,6 @@ class SentenceStream(object):
 
 			for raw_sentence in raw_sentences:
 				if len(raw_sentence) > 0:
-					raw_sentence = re.sub("[0-9]","DG",raw_sentence)
-					raw_sentence = re.sub("[^a-zA-Z]"," ", raw_sentence)
 					yield process(raw_sentence).split()
 
 def unzip_files():
@@ -70,12 +68,11 @@ def read_file(limit = None):
 				break
 
 	logging.info("reviews read: {0}".format(rev_count))
-	return sentences
-
 def process(string):
 	exclude = set(['[','^',']','\"','(','&','!','\'',':','+',')',';','?','.','-','+','#'])
 
 	x = string.lower()
+	x = re.sub("[0-9]","DG",x)
 
 	try:
 		x = "".join(ch for ch in x if ch not in exclude)
