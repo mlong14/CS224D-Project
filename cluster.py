@@ -12,14 +12,12 @@ model = Word2Vec.load(os.path.join(settings.MODEL_ROOT,model_name))
 
 sttime = time.time()
 
-# Set "k" (num_clusters) to be 1/5th of the vocabulary size, or an
-# average of 5 words per cluster
-k = 5
+k = 20
 word_vectors = model.syn0
 num_clusters = word_vectors.shape[0] / k
 
 # Initalize a k-means object and use it to extract centroids
-kmeans_clustering = KMeans( n_clusters = num_clusters )
+kmeans_clustering = KMeans( n_clusters = num_clusters, n_jobs=4, verbose=1)
 idx = kmeans_clustering.fit_predict( word_vectors )
 
 # Get the end time and print how long the process took
