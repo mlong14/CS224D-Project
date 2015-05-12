@@ -21,7 +21,11 @@ def testW2V():
 	while (1):
 		print "Enter query"
 		query = raw_input()
-		print model.most_similar(positive=query.split())
+		try:
+			print model.most_similar(positive=query.split())
+		except (KeyError):
+			logging.info("word not found")
+			pass
 	#print model.most_similar(positive=['build','quality'])
 	#print model.most_similar(positive=['screen','quality'])
 	#print model.most_similar(positive=['macbook'])
