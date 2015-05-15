@@ -174,30 +174,49 @@ An application-related goal would be to have visualization of our output, in ter
 
 
 
-%When one is planning a purchase, one usually has to spend time sifting through multiple reviews across many different websites, distilling the information to get (1) ratings for individual attributes (Òbattery lifeÓ), and (2) an overall rating / summary of the information, presented in a Òmeta-reviewÓ. 
+%When one is planning a purchase, one usually has to spend time sifting through multiple reviews across many different websites, distilling the information to get (1) ratings for individual attributes (ï¿½battery lifeï¿½), and (2) an overall rating / summary of the information, presented in a ï¿½meta-reviewï¿½. 
 %Four separate sub-problems:
-%1) Doing POS-tagging and named entity recognition for various product attributes (e.g. battery life, weight, portability, etc) (weÕll probably use off-the-shelf (Stanford NLP) tools for this problem)
-%2) Train word2vec representations of said attributes and clustering them (e.g. Òbuild qualityÓ and ÒconstructionÓ can refer to the same attribute)
+%1) Doing POS-tagging and named entity recognition for various product attributes (e.g. battery life, weight, portability, etc) (weï¿½ll probably use off-the-shelf (Stanford NLP) tools for this problem)
+%2) Train word2vec representations of said attributes and clustering them (e.g. ï¿½build qualityï¿½ and ï¿½constructionï¿½ can refer to the same attribute)
 %3) Extract sentiment based on product attributes
-%4) Aggregate this information across multiple reviews (creating a Òmeta-reviewÓ)
+%4) Aggregate this information across multiple reviews (creating a ï¿½meta-reviewï¿½)
 %A potential application allows for quick comparisons of various products based on user-generated reviews. Say you are purchasing an Android tablet and are looking at the Samsung Galaxy Tab 4, Nexus 9, Nvidia Shield and other similar products, our system would allow users to identify key attributes of each product (e.g. screen resolution, build quality, battery life, etc) and their associated sentiment, i.e. how positively or negatively do people feel about each product attribute.
 %Given the constraints of a class project, we will be limiting our dataset to reviews of electronic consumer products.
 
 
 %POS and NER: Using off-the-shelf tools
 %Clustering entities: cluster learned word2vec representations (e.g. K-NN or distribution-based clustering methods)
-%Extract entity-level sentiment: modifying and extending Socher et al (2013)Õs model via calculating the sentiment in a window/neighborhood around the named entity, up to the whole sentence.
-%Aggregation of sentiment (across multiple sentences, and across multiple reviews): this is perhaps where deep-learning might be extremely useful, but as yet we do not know enough about various deep learning architectures to do this optimally. There are several papers that we identified that might give us some insight (although they donÕt use deep learning)
+%Extract entity-level sentiment: modifying and extending Socher et al (2013)ï¿½s model via calculating the sentiment in a window/neighborhood around the named entity, up to the whole sentence.
+%Aggregation of sentiment (across multiple sentences, and across multiple reviews): this is perhaps where deep-learning might be extremely useful, but as yet we do not know enough about various deep learning architectures to do this optimally. There are several papers that we identified that might give us some insight (although they donï¿½t use deep learning)
 
 
 
 
 \section{Intermediate/Preliminary Experiments \& Results}
+\subsection{Preprocessing} We tokenized our corpus using NLTK's punkt tokenizer [12] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams.
 
-State and evaluate your results up to the milestone
+\subsection{Model Training} We trained three different word2vec models. The most successful model was trained using the CBOW (continuous bag-of-words) model with a window size of 10 and feature dimension size of 300. We also ignored all words with total frequency count below 40 (this helped to remove many typos). We determined the performance of each model by querying the model with various aspects common to electronic products (e.g. "portability", "screen quality", etc).
 
+\subsection{word2vec Results}
+We queried our word2vec model and returned the top-10 results based on cosine similarity of the word vectors.
 
-%We can evaluate the attribute sentiments against the formal ratings provided by CNET or consumer reports. An aggregation of sentiment for individual reviews can also be compared against a userÕs overall rating of the product.
+\begin{center}
+    \begin{tabular}{ | l | p{9cm} |}
+    \hline
+    Query & Results \\ \hline
+    \texttt{portability} & \texttt{(u'portability,', 0.72859996557235718), (u'compactness', 0.64743077754974365), (u'mobility', 0.60842603445053101), (u'versatility', 0.5763777494430542), (u'simplicity', 0.53962129354476929), (u'lightness', 0.53950369358062744), (u'convenience', 0.53897607326507568), (u'ruggedness', 0.5272858738899231), (u'versatility,', 0.5055851936340332), (u'thinness', 0.49253776669502258)} \\ \hline
+
+	\texttt{contrast} & \texttt{(u'contrast,', 0.65686732530593872), (u'sharpness', 0.62712550163269043), (u'color\_saturation', 0.60933655500411987), (u'saturation', 0.57076853513717651), (u'brightness', 0.5553707480430603), (u'gamma', 0.53090476989746094), (u'shadow\_detail', 0.52805298566818237), (u'color\_accuracy', 0.52408510446548462), (u'dynamic\_range', 0.52167940139770508), (u'black\_levels', 0.51741272211074829)} \\ \hline
+
+	\texttt{tripod} & \texttt{(u'monopod', 0.74430769681930542), (u'tripod,', 0.71975594758987427), (u'ball\_head', 0.70861411094665527), (u'tripods', 0.68399727344512939), (u'ballhead', 0.60356354713439941), (u'manfrotto', 0.59598124027252197), (u'monopod,', 0.58229464292526245), (u'pole', 0.56997144222259521), (u'quick\_release', 0.549965500831604), (u'cold\_shoe', 0.5460544228553772)} \\ \hline
+    \end{tabular}
+\end{center}
+
+As shown in the table above, words like \texttt{portability} returned many synonyms as well as product aspects that are related to it (e.g. \texttt{ruggedness} and \texttt{simplicity}). We also find that our model is capable of returning aspects that are specific and unique to the product category it is trained on. In this case of electronic products, a query like \texttt{contrast} returned words like \texttt{shadow\_detail}, \texttt{dynamic\_range}, \texttt{black\_levels} and \texttt{gamma}, which are aspects specific to devices like monitor displays and cameras.\\
+\\
+A query like \texttt{tripod} returned various aspects camera tripods, many of them being features that are non-obvious to the layperson. For instance, \texttt{ball\_head} refers to a ball-type tripod heads and \texttt{quick\_release} refers to quick-release tripod mounts. Many of these queries would otherwise perform poorly if we were to use lexical databases like WordNet.
+
+%We can evaluate the attribute sentiments against the formal ratings provided by CNET or consumer reports. An aggregation of sentiment for individual reviews can also be compared against a userï¿½s overall rating of the product.
 %We can evaluate the attribute clustering using standard cluster metrics. A projection to a 2-D space for visualization would also be valuable.
 
 
@@ -257,6 +276,8 @@ We would like to acknowledge funding for computing resources provided by the Dee
 
 
 [11] McAuley, J., Targett, C., Shi, J., \& van den Hengel, A. (2015). Image-based recommendations on styles and substitutes. {\it ACM Special Interest Group on Information Retrieval (SIGIR)}
+
+[12] Bird, Steven, Loper, E. and Klein, E. (2009). Natural Language Processing with Python. Oâ€™Reilly Media Inc.
 
 
 
