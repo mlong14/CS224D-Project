@@ -72,25 +72,34 @@ The second component, \textit{aspect-specific sentiment analysis} involves subse
 \section{Problem Statement}
 %Describe your problem precisely specifying the dataset to be used, expected results and evaluation
 
+\begin{figure}[h]
+\begin{center}
+\includegraphics[width=.85\columnwidth]{workflow.png}
+\end{center}
+\caption{Proposed Workflow. Boxed items are processes, while non-boxed items are outputs. The left third of the diagram involves converting the reviews into a word vector representation, the middle third details unsupervised aspect discovery, while the right half of the diagram involves aspect-specific sentiment extraction, summarization and visualization.}% Except for the Sentiment Labeling and Visualization processes, every other process involves deep learning.}
+\label{workflow}
+\end{figure}
+
 Our proposed workflow can be divided into two main parts: (unsupervised) {\bf Aspect Discovery} and {\bf Aspect-Specific Sentiment Extraction}. See Fig. \ref{workflow} for an illustration.
 
 \subsection{Aspect Discovery}
 
-\textbf{Problem}: Given an {\bf unlabeled} set of product reviews (for a single product), identify clusters $\{C_1,\ldots, C_k\}$, where the (weighted) centroid of cluster $i$ would represent aspect $i$, and member words of cluster $i$ would represent synonyms that map onto the same aspect $i$.
+\textbf{Problem}: Given a short list of attributes (``seed" attributes), we discover an expanded list of attributes by returning the top $n$ related word vectors based on cosine similarity.
+%Given an {\bf unlabeled} set of product reviews (for a single product), identify clusters $\{C_1,\ldots, C_k\}$, where the (weighted) centroid of cluster $i$ would represent aspect $i$, and member words of cluster $i$ would represent synonyms that map onto the same aspect $i$.
 
 \textbf{Dataset}: 6 million reviews of electronic products from Amazon.com [8].
 
-\textbf{Evaluation}: {\it \bf (fill in)}.
-
 \subsection{Aspect-Specific Sentiment Extraction}
 
-\textbf{Input}: From above, we can generate aspect labels for product reviews. We will also use an existing trained sentiment analysis model to generate sentiment labels for each token / unigram.
+%\textbf{Input}: From above, we can generate aspect labels for product reviews. We will also use an existing trained sentiment analysis model to generate sentiment labels for each token / unigram.
 
 \textbf{Problem}: Given a set of product reviews (for a single product), identify (aspect, aspect-related sentiment) tuples. This is a similar problem statement as [6]: we intend to expand upon their model.
 
-\textbf{Evaluation}: {\it \bf (fill in)}.
+\textbf{Evaluation}: We will construct word cloud visualizations color coded to express sentiment. We will also perform comparisons with ``expert review" sites like CNET and DPReview (e.g. DPReview specifically rates digital cameras along certain chosen dimensions).
 
-\textbf{Output:} Given the (aspect, aspect-related sentiment) tuples, we can summarize them across reviews to obtain a ``meta-review" with aggregated sentiment for each aspect. We will also visualize these results.
+%pick 20 products:
+%barplot
+%cnet, consumer report, dpreview
 
 %\subsection{Aspect-Specific Sentiment Aggregation}
 
@@ -106,19 +115,13 @@ Our proposed workflow can be divided into two main parts: (unsupervised) {\bf As
 \section{Technical Approach and Models} 
 %Describe the methods you intend to apply to solve the given problem
 
-\begin{figure}[h]
-\begin{center}
-\includegraphics[width=1\columnwidth]{workflow.png}
-\end{center}
-\caption{Proposed Workflow. Boxed items are processes, while non-boxed items are outputs. The left third of the diagram involves converting the reviews into a word vector representation, the middle third details unsupervised aspect discovery, while the right half of the diagram involves aspect-specific sentiment extraction, summarization and visualization.}% Except for the Sentiment Labeling and Visualization processes, every other process involves deep learning.}
-\label{workflow}
-\end{figure}
+
 
 
 
 \subsection{Aspect Discovery}
 
-The first part of the project involves an unsupervised approach to generating aspects. First, we run word2vec to obtain a word vector representation of the data. Then, we would perform k-means clustering (or some other clustering algorithm) on the word2vec representations. This would generate clusters of similar words, such as: \{build construction, build quality, durability, etc\}. We can then define the weighted centroid of these clusters as {\bf Aspects}, and the other words in the cluster as relevant synonyms. This allows us to label all the aspect-words in the dataset.
+The first part of the project involves an unsupervised approach to generating aspects. We tokenized our corpus using NLTK's punkt tokenizer [9] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams. We run word2vec (CBOW, Skipgram) to obtain a word vector representation of the data (varying hyper parameters like window size). We start with a list of seed attributes across a wide range of products, and discover more via closest cosine similarity.
 
 
 %{\it Desmond and Shane's discussion: it might be counter-intuitive but beneficial to treat Expensive as an attribute (for Price). The NER model will be doing something ``wrong" in labeling an adjective as an entity, but you'll be able to capture the price information when someone says ``expensive".}
@@ -126,7 +129,7 @@ The first part of the project involves an unsupervised approach to generating as
 
 \subsection{Aspect-Specific Sentiment Extraction}
 
-An additional step would be to label all unigrams with a sentiment analysis lexicon (Bing Liu's sentiment lexicon) or the Sentiment pipeline in CoreNLP [7]. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment. Next, we build off and improve on the model in [6]: we will use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data.
+An additional step would be to label all unigrams with a sentiment analysis lexicon (Bing Liu's sentiment lexicon) or the Sentiment pipeline in CoreNLP [7]. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment. Next, we build off and improve on the model in [6]: we will use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data. Finally, we will have a summarization of aspect-related sentiment via visualization of our output, in terms of a word cloud of important aspects (e.g., sized by word frequency and colored by sentiment). 
 
 
 %\subsection{Aspect-Specific Sentiment Aggregation}
@@ -134,7 +137,7 @@ An additional step would be to label all unigrams with a sentiment analysis lexi
 %The final part of our project involves aspect-specific sentiment aggregation across sentences within a review, and at a further step, aggregating across reviews. We are still currently reading relevant literature (e.g. [8-10]) to come up with ideas on how to optimally construct this. A non-deep learning approach might be to hand-specify features (review length; timing -- more recent reviews might be more important; etc). In contrast, a deep learning proposal would be to have a deep learning network (such as a recursive neural network with individual reviews as tokens) to try to come up with an optimal way of aggregating this information. We plan to scrape professional review websites like Consumer Reports, CNET and/or DPReview, to provide gold standard summary reviews that our model will predict.
 
 
-An application-related goal would be to have a summarization or meta-review of our aspect-related sentiment, and finally, a visualization of our output, in terms of a word cloud of important aspects (e.g., sized by word frequency and colored by sentiment), or a bar chart that shows the relevant aspects and their associated sentiment.
+%or a bar chart that shows the relevant aspects and their associated sentiment.
 
 
 %
@@ -195,28 +198,51 @@ An application-related goal would be to have a summarization or meta-review of o
 
 
 \section{Intermediate/Preliminary Experiments \& Results}
-\subsection{Preprocessing} We tokenized our corpus using NLTK's punkt tokenizer [12] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams.
-
+%\subsection{Preprocessing} 
 \subsection{Model Training} We trained three different word2vec models. The most successful model was trained using the CBOW (continuous bag-of-words) model with a window size of 10 and feature dimension size of 300. We also ignored all words with total frequency count below 40 (this helped to remove many typos). We determined the performance of each model by querying the model with various aspects common to electronic products (e.g. "portability", "screen quality", etc).
 
 \subsection{word2vec Results}
 We queried our word2vec model and returned the top-10 results based on cosine similarity of the word vectors.
 
+%\begin{table}[h]
+%\begin{center}
+%\scalebox{0.7}{
+%    \begin{tabular}{ | l | p{9cm} |}
+%    \hline
+%    Query & Results \\ \hline
+%    \texttt{portability} & \texttt{(u'portability,', 0.72859996557235718), (u'compactness', 0.64743077754974365), (u'mobility', 0.60842603445053101), (u'versatility', 0.5763777494430542), (u'simplicity', 0.53962129354476929), (u'lightness', 0.53950369358062744), (u'convenience', 0.53897607326507568), (u'ruggedness', 0.5272858738899231), (u'versatility,', 0.5055851936340332), (u'thinness', 0.49253776669502258)} \\ \hline
+%
+%	\texttt{contrast} & \texttt{(u'contrast,', 0.65686732530593872), (u'sharpness', 0.62712550163269043), (u'color\_saturation', 0.60933655500411987), (u'saturation', 0.57076853513717651), (u'brightness', 0.5553707480430603), (u'gamma', 0.53090476989746094), (u'shadow\_detail', 0.52805298566818237), (u'color\_accuracy', 0.52408510446548462), (u'dynamic\_range', 0.52167940139770508), (u'black\_levels', 0.51741272211074829)} \\ \hline
+%
+%	\texttt{tripod} & \texttt{(u'monopod', 0.74430769681930542), (u'tripod,', 0.71975594758987427), (u'ball\_head', 0.70861411094665527), (u'tripods', 0.68399727344512939), (u'ballhead', 0.60356354713439941), (u'manfrotto', 0.59598124027252197), (u'monopod,', 0.58229464292526245), (u'pole', 0.56997144222259521), (u'quick\_release', 0.549965500831604), (u'cold\_shoe', 0.5460544228553772)} \\ \hline
+%    \end{tabular}
+%}
+%\end{center}
+%\caption{Preliminary Results from word2vec model}
+%\end{table}
+
+
+\begin{table}[h]
 \begin{center}
-    \begin{tabular}{ | l | p{9cm} |}
+\scalebox{0.8}{
+    \begin{tabular}{ |c| p{5cm} | p{5cm} | p{5cm} | }
     \hline
-    Query & Results \\ \hline
-    \texttt{portability} & \texttt{(u'portability,', 0.72859996557235718), (u'compactness', 0.64743077754974365), (u'mobility', 0.60842603445053101), (u'versatility', 0.5763777494430542), (u'simplicity', 0.53962129354476929), (u'lightness', 0.53950369358062744), (u'convenience', 0.53897607326507568), (u'ruggedness', 0.5272858738899231), (u'versatility,', 0.5055851936340332), (u'thinness', 0.49253776669502258)} \\ \hline
-
-	\texttt{contrast} & \texttt{(u'contrast,', 0.65686732530593872), (u'sharpness', 0.62712550163269043), (u'color\_saturation', 0.60933655500411987), (u'saturation', 0.57076853513717651), (u'brightness', 0.5553707480430603), (u'gamma', 0.53090476989746094), (u'shadow\_detail', 0.52805298566818237), (u'color\_accuracy', 0.52408510446548462), (u'dynamic\_range', 0.52167940139770508), (u'black\_levels', 0.51741272211074829)} \\ \hline
-
-	\texttt{tripod} & \texttt{(u'monopod', 0.74430769681930542), (u'tripod,', 0.71975594758987427), (u'ball\_head', 0.70861411094665527), (u'tripods', 0.68399727344512939), (u'ballhead', 0.60356354713439941), (u'manfrotto', 0.59598124027252197), (u'monopod,', 0.58229464292526245), (u'pole', 0.56997144222259521), (u'quick\_release', 0.549965500831604), (u'cold\_shoe', 0.5460544228553772)} \\ \hline
+    Query &\texttt{portability}  & \texttt{contrast}  & \texttt{tripod}  \\
+    \hline
+    Results & \texttt{(u'portability,', 0.72859996557235718), (u'compactness', 0.64743077754974365), (u'mobility', 0.60842603445053101), (u'versatility', 0.5763777494430542), (u'simplicity', 0.53962129354476929), (u'lightness', 0.53950369358062744), (u'convenience', 0.53897607326507568), (u'ruggedness', 0.5272858738899231), (u'versatility,', 0.5055851936340332), (u'thinness', 0.49253776669502258)} & 
+     \texttt{(u'contrast,', 0.65686732530593872), (u'sharpness', 0.62712550163269043), (u'color\_saturation', 0.60933655500411987), (u'saturation', 0.57076853513717651), (u'brightness', 0.5553707480430603), (u'gamma', 0.53090476989746094), (u'shadow\_detail', 0.52805298566818237), (u'color\_accuracy', 0.52408510446548462), (u'dynamic\_range', 0.52167940139770508), (u'black\_levels', 0.51741272211074829)}  & 
+     \texttt{(u'monopod', 0.74430769681930542), (u'tripod,', 0.71975594758987427), (u'ball\_head', 0.70861411094665527), (u'tripods', 0.68399727344512939), (u'ballhead', 0.60356354713439941), (u'manfrotto', 0.59598124027252197), (u'monopod,', 0.58229464292526245), (u'pole', 0.56997144222259521), (u'quick\_release', 0.549965500831604), (u'cold\_shoe', 0.5460544228553772)} \\
+    \hline
     \end{tabular}
+}
 \end{center}
+\caption{Preliminary Results from word2vec model}
+\end{table}
+
 
 As shown in the table above, words like \texttt{portability} returned many synonyms as well as product aspects that are related to it (e.g. \texttt{ruggedness} and \texttt{simplicity}). We also find that our model is capable of returning aspects that are specific and unique to the product category it is trained on. In this case of electronic products, a query like \texttt{contrast} returned words like \texttt{shadow\_detail}, \texttt{dynamic\_range}, \texttt{black\_levels} and \texttt{gamma}, which are aspects specific to devices like monitor displays and cameras.\\
 \\
-A query like \texttt{tripod} returned various aspects camera tripods, many of them being features that are non-obvious to the layperson. For instance, \texttt{ball\_head} refers to a ball-type tripod heads and \texttt{quick\_release} refers to quick-release tripod mounts. Many of these queries would otherwise perform poorly if we were to use lexical databases like WordNet.
+A query like \texttt{tripod} returned various aspects of camera tripods, many of them being features that are non-obvious to the layperson. For instance, \texttt{ball\_head} refers to a ball-type tripod heads and \texttt{quick\_release} refers to quick-release tripod mounts. Many of these queries would otherwise perform poorly if we were to use lexical databases like WordNet.
 
 %We can evaluate the attribute sentiments against the formal ratings provided by CNET or consumer reports. An aggregation of sentiment for individual reviews can also be compared against a user�s overall rating of the product.
 %We can evaluate the attribute clustering using standard cluster metrics. A projection to a 2-D space for visualization would also be valuable.
@@ -279,7 +305,7 @@ We would like to acknowledge funding for computing resources provided by the Dee
 
 [8] McAuley, J., Targett, C., Shi, J., \& van den Hengel, A. (2015). Image-based recommendations on styles and substitutes. {\it ACM Special Interest Group on Information Retrieval (SIGIR)}
 
-[12] Bird, Steven, Loper, E. and Klein, E. (2009). Natural Language Processing with Python. O’Reilly Media Inc.
+[9] Bird, Steven, Loper, E. and Klein, E. (2009). Natural Language Processing with Python. O’Reilly Media Inc.
 
 
 
