@@ -1,0 +1,30 @@
+instructions for running Stanford CoreNLP
+
+
+java -cp stanford-corenlp-full-2013-11-12/"*" -mx5g edu.stanford.nlp.sentiment.SentimentPipeline -file input.txt 
+
+If you want to call it from within a python file, one quick and dirty was is to use os.system
+
+e.g.
+
+import os
+testCommand = 'java -cp stanford-corenlp-full-2013-11-12/"*" -mx5g edu.stanford.nlp.sentiment.SentimentPipeline -file test_review.txt'
+os.system(testCommand)
+
+
+
+-----------
+cd into the stanford-corenlp-full-2013-11-12/ directory
+
+
+
+input a file
+
+java -cp "*" -mx5g edu.stanford.nlp.sentiment.SentimentPipeline -file foo.txt 
+
+
+interactive version:
+
+java -cp "*" -mx5g edu.stanford.nlp.sentiment.SentimentPipeline -stdin
+
+
