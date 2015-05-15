@@ -90,7 +90,7 @@ Our proposed workflow can be divided into two main parts: (unsupervised) {\bf As
 
 \textbf{Evaluation}: {\it \bf (fill in)}.
 
-\textbf{Output:} Given the (aspect, aspect-related sentiment) tuples, we can summarize them across reviews to obtain a ``meta-review" with aggregated sentiment for each aspect. We will also visualize these results to aid consumers.
+\textbf{Output:} Given the (aspect, aspect-related sentiment) tuples, we can summarize them across reviews to obtain a ``meta-review" with aggregated sentiment for each aspect. We will also visualize these results.
 
 %\subsection{Aspect-Specific Sentiment Aggregation}
 
@@ -110,7 +110,7 @@ Our proposed workflow can be divided into two main parts: (unsupervised) {\bf As
 \begin{center}
 \includegraphics[width=1\columnwidth]{workflow.png}
 \end{center}
-\caption{Proposed Workflow. Boxed items are processes, while non-boxed items are outputs. The left half of the diagram details unsupervised aspect discovery, while the right half of the diagram involves aspect-specific sentiment extraction, summarization and visualization.}% Except for the Sentiment Labeling and Visualization processes, every other process involves deep learning.}
+\caption{Proposed Workflow. Boxed items are processes, while non-boxed items are outputs. The left third of the diagram involves converting the reviews into a word vector representation, the middle third details unsupervised aspect discovery, while the right half of the diagram involves aspect-specific sentiment extraction, summarization and visualization.}% Except for the Sentiment Labeling and Visualization processes, every other process involves deep learning.}
 \label{workflow}
 \end{figure}
 
@@ -126,9 +126,7 @@ The first part of the project involves an unsupervised approach to generating as
 
 \subsection{Aspect-Specific Sentiment Extraction}
 
-An additional pre-processing step would be to label all unigrams with a trained sentiment analysis model. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment.
-
-Next, we build off and improve on the model in [7] to use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data.
+An additional step would be to label all unigrams with a sentiment analysis lexicon (Bing Liu's sentiment lexicon) or the Sentiment pipeline in CoreNLP [7]. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment. Next, we build off and improve on the model in [6]: we will use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data.
 
 
 %\subsection{Aspect-Specific Sentiment Aggregation}
