@@ -24,10 +24,17 @@ def discAspects(inputFile):
             try:
                 print line.split()
                 print model.most_similar(positive=line.split())
+                thisList = model.most_similar(positive=line.split())
+                with open('aspectDictionary.txt','a') as f:
+                    f.write(line.split() + "\n")
+                    for item in thisList:
+                        f.write(item[0].rstrip(',') + "\n")
             except (KeyError):
                 print("word %s not found"%(line.split()))
                 pass
 def main():
+    with open('aspectDictionary.txt','w') as f:
+        f.write("")
     discAspects(sys.argv[1])
 
 if __name__ == '__main__':
