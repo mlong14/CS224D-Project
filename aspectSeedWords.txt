@@ -1,51 +1,63 @@
-screen resolution
-build quality
-durability
-brightness
-sound quality
-quality
-video quality
-user interface
-usability
-battery life
 aesthetics
-design
-experience
-speed
-warranty
-multimedia
-weight
-portability
-ergonomics
-size
-versatility
-performance
-touchpad
-display
-browsing
-voice quality
-reception
-messaging
-navigation
-touch screen
-voice control
-remote
-installation
-setup
-readability
 aspect ratio
-pixel density
-range
-strength
-resolution
+aspect_ratio
+battery life
+battery_life
+brightness
+browsing
+build quality
+build_quality
+cables
 camera
-sensor size
+color
 contrast
 cost
+design
+display
+durability
+ergonomics
+experience
 fashionable
-cables
-color
-waterproof
+installation
 keyboard
+messaging
+multimedia
+navigation
+performance
+pixel density
+pixel_density
+portability
+quality
+range
+readability
+reception
+remote
+resolution
+screen resolution
+screen_resolution
+sensor size
+sensor_size
+setup
 signal
+size
+sound quality
+sound_quality
+speed
 storage
+strength
+touch screen
+touch_screen
+touchpad
+usability
+user interface
+user_interface
+versatility
+video quality
+video_quality
+voice control
+voice_control
+voice quality
+voice_quality
+warranty
+waterproof
+weight

@@ -63,13 +63,17 @@ def split(windowWidth = 2):
 	sentences = SentenceStream(os.path.join(settings.DATA_ROOT,settings.JSON_FNAME))
 	#sentences = SentenceStream(os.path.join(settings.DATA_ROOT,'small_dataset'))
 	
+	#bigram = gensim.models.phrases.Phrases(sentences)
+	bigram = gensim.models.phrases.Phrases.load(os.path.join(settings.MODEL_ROOT,settings.NGRAM_FNAME))
+
+
 	logging.info("reading in sentences")
 	st_time = datetime.now()
 	counter = 0
 	for sentence in sentences:
 		counter+=1
-		if counter%1000==0:
-			print counter
+		if counter%10000==0:
+			print ("Bigram. WindowWidth: " + str(windowWidth) + ", numSentences: " + str(counter))
 		for idx, word in enumerate(sentence):
 			# checks if the word is a known aspect
 			if word in aspectDictionary:
@@ -83,21 +87,21 @@ def split(windowWidth = 2):
 				# annotates the sentiment. does a simple check to classify into pos, neg, or neutral
 				sentiments = [myAnnotator.annotate(sentence[j]) for j in listOfIdxCleaned]
 				if sentiments.count('pos') > sentiments.count('neg'):
-					file_name = 'cnn_input/positivePhrases_' + str(windowWidth) + '.txt'
+					file_name = 'cnn_input/positivePhrases_bigram_' + str(windowWidth) + '.txt'
 				elif sentiments.count('pos') < sentiments.count('neg'):
-					file_name = 'cnn_input/negativePhrases_' + str(windowWidth) + '.txt'
+					file_name = 'cnn_input/negativePhrases_bigram_' + str(windowWidth) + '.txt'
 				else:
-					file_name = 'cnn_input/neutralPhrases_' + str(windowWidth) + '.txt'
+					file_name = 'cnn_input/neutralPhrases_bigram_' + str(windowWidth) + '.txt'
 
 				# writes the phrase to the corresponding file
 				with open(file_name,'a') as f:
-					f.write(' '.join(phrase) + "\n")
+					f.write(' '.join(bigram[phrase] ) + "\n")
 
 				#print idx, word
 				#print phrase
 				#print sentiments
 				#print(myAnnotator.annotate('awesome'))
-
+	print ("Final Counter: " + str(counter))
 	# Run word2vec
 	#model_name = "word2vec_cbow_size300_window10_mincount40_sample1e-3"
 	#model = gensim.models.word2vec.Word2Vec(sentences=bigram[sentences], sg=0, size=300, alpha=0.025, window=10, workers = 6, min_count=40, sample=1E-3, negative=10)
@@ -111,19 +115,19 @@ def split(windowWidth = 2):
 	#print model.most_similar(positive=['build','quality'])
 
 
-def clearOutputFiles():
-	file_name = 'cnn_input/positivePhrases_' + str(windowWidth) + '.txt'
+def clearOutputFiles(windowWidth = 0):
+	file_name = 'cnn_input/positivePhrases_bigram_' + str(windowWidth) + '.txt'
 	with open(file_name,'w') as f:
 		f.write('')
-	file_name = 'cnn_input/negativePhrases_' + str(windowWidth) + '.txt'
+	file_name = 'cnn_input/negativePhrases_bigram_' + str(windowWidth) + '.txt'
 	with open(file_name,'w') as f:
 		f.write('')
-	file_name = 'cnn_input/neutralPhrases_' + str(windowWidth) + '.txt'
+	file_name = 'cnn_input/neutralPhrases_bigram_' + str(windowWidth) + '.txt'
 	with open(file_name,'w') as f:
 		f.write('')
 
 def main():
-	clearOutputFiles()
+	clearOutputFiles(windowWidth = 5)
 	split(windowWidth = 5)
 
 
