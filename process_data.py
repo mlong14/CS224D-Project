@@ -12,9 +12,26 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
     """
     revs = []
     pos_file = data_folder[0]
-    neg_file = data_folder[1]
+    neu_file = data_folder[1]
+    neg_file = data_folder[2]
     vocab = defaultdict(float)
     with open(pos_file, "rb") as f:
+        for line in f:       
+            rev = []
+            rev.append(line.strip())
+            if clean_string:
+                orig_rev = clean_str(" ".join(rev))
+            else:
+                orig_rev = " ".join(rev).lower()
+            words = set(orig_rev.split())
+            for word in words:
+                vocab[word] += 1
+            datum  = {"y":1, 
+                      "text": orig_rev,                             
+                      "num_words": len(orig_rev.split()),
+                      "split": np.random.randint(0,cv)}
+            revs.append(datum)
+    with open(neu_file, "rb") as f:
         for line in f:       
             rev = []
             rev.append(line.strip())
@@ -131,8 +148,9 @@ def gensim2dict(w2v):
     return w2v_dict
 
 if __name__=="__main__":    
-    w2v_file = sys.argv[1]     
-    data_folder = ["rt-polarity.pos","rt-polarity.neg"]    
+    #w2v_file = sys.argv[1]     
+    #data_folder = ["rt-polarity.pos","rt-polarity.neg"]    
+    data_folder= ["./data/positivePhrases_5_reduced.txt","./data/neutralPhrases_5_reduced.txt","./data/negativePhrases_5_reduced.txt"]
     print "loading data...",        
     revs, vocab = build_data_cv(data_folder, cv=10, clean_string=True)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
