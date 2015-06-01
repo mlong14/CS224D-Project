@@ -41,3 +41,11 @@ resolution
 camera
 sensor size
 contrast
+cost
+fashionable
+cables
+color
+waterproof
+keyboard
+signal
+storage
