@@ -26,7 +26,7 @@ def discAspects(inputFile):
                 print model.most_similar(positive=line.split())
                 thisList = model.most_similar(positive=line.split())
                 with open('aspectDictionary.txt','a') as f:
-                    f.write(line.split() + "\n")
+                    f.write(" ".join(line.split()) + "\n")
                     for item in thisList:
                         f.write(item[0].rstrip(',') + "\n")
             except (KeyError):

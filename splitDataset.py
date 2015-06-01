@@ -83,11 +83,11 @@ def split(windowWidth = 2):
 				# annotates the sentiment. does a simple check to classify into pos, neg, or neutral
 				sentiments = [myAnnotator.annotate(sentence[j]) for j in listOfIdxCleaned]
 				if sentiments.count('pos') > sentiments.count('neg'):
-					file_name = 'cnn_input/positivePhrases.txt'
+					file_name = 'cnn_input/positivePhrases_' + str(windowWidth) + '.txt'
 				elif sentiments.count('pos') < sentiments.count('neg'):
-					file_name = 'cnn_input/negativePhrases.txt'
+					file_name = 'cnn_input/negativePhrases_' + str(windowWidth) + '.txt'
 				else:
-					file_name = 'cnn_input/neutralPhrases.txt'
+					file_name = 'cnn_input/neutralPhrases_' + str(windowWidth) + '.txt'
 
 				# writes the phrase to the corresponding file
 				with open(file_name,'a') as f:
@@ -112,13 +112,13 @@ def split(windowWidth = 2):
 
 
 def clearOutputFiles():
-	file_name = 'cnn_input/positivePhrases.txt'
+	file_name = 'cnn_input/positivePhrases_' + str(windowWidth) + '.txt'
 	with open(file_name,'w') as f:
 		f.write('')
-	file_name = 'cnn_input/negativePhrases.txt'
+	file_name = 'cnn_input/negativePhrases_' + str(windowWidth) + '.txt'
 	with open(file_name,'w') as f:
 		f.write('')
-	file_name = 'cnn_input/neutralPhrases.txt'
+	file_name = 'cnn_input/neutralPhrases_' + str(windowWidth) + '.txt'
 	with open(file_name,'w') as f:
 		f.write('')
 

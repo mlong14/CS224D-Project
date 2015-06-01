@@ -1,3 +1,4 @@
+screen resolution
 screen
 display
 screens
@@ -8,6 +9,7 @@ pixel_density
 frame_rate
 resolutions
 resolution_DGDGDGDGxDGDGDG
+build quality
 build_quality
 quality
 build_quality
@@ -19,6 +21,7 @@ construction
 quailty
 build
 durability
+durability
 longevity
 reliability
 sturdiness
@@ -29,6 +32,7 @@ longterm_reliability
 reliability
 longterm_durability
 brightness
+brightness
 sharpness
 contrast
 backlight
@@ -38,6 +42,7 @@ brighness
 intensity
 sensitivity
 brightness,_contrast
+sound quality
 sound
 build_quality
 fidelity
@@ -49,6 +54,7 @@ bass_response
 quailty
 quility
 quality
+quality
 quailty
 qaulity
 qualitythe
@@ -58,6 +64,7 @@ qualityi
 qualityDG
 quallity
 qualty
+video quality
 video
 quality
 quailty
@@ -68,6 +75,7 @@ quility
 qualityit
 qualityDG
 qualitythe
+user interface
 user_interface
 ui
 user
@@ -78,6 +86,7 @@ users
 web_interface
 interfaces
 os
+usability
 functionality
 usefulness
 usability
@@ -88,6 +97,7 @@ attractiveness
 responsiveness
 readability
 easeofuse
+battery life
 batter
 battery
 battery_life
@@ -98,6 +108,7 @@ batery
 batterythe
 battey
 batteryDG
+aesthetics
 aesthetic
 aesthetics
 styling
@@ -109,6 +120,7 @@ usability
 design
 asthetics
 design
+design
 styling
 designDG
 concept
@@ -118,6 +130,7 @@ concept
 appearance
 style
 designs
+experience
 experience
 experiences
 experiencei
@@ -129,6 +142,7 @@ experienceDG
 experince
 expierence
 speed
+speed
 speeds
 speeds
 throughput
@@ -139,6 +153,7 @@ speedthe
 download_speeds
 bandwidth
 warranty
+warranty
 warrenty
 warrantee
 manufacturers_warranty
@@ -148,6 +163,7 @@ waranty
 protection_plan
 warrantyi
 extended_warranty
+multimedia
 media
 entertainment
 media_consumption
@@ -159,6 +175,7 @@ home_theater
 entertainment
 gaming
 weight
+weight
 heft
 thickness
 bulk
@@ -169,6 +186,7 @@ girth
 weightthe
 weight/bulk
 portability
+portability
 compactness
 mobility
 versatility
@@ -178,6 +196,7 @@ convenience
 ruggedness
 versatility
 thinness
+ergonomics
 aesthetics
 ergonomically
 weight_distribution
@@ -189,6 +208,7 @@ responsiveness
 design
 optics
 size
+size
 sizethe
 sizei
 form_factor
@@ -198,6 +218,7 @@ length
 dimensions
 sizing
 footprint
+versatility
 flexibility
 convenience
 simplicity
@@ -209,6 +230,7 @@ mobility
 lightness
 functionality
 performance
+performance
 performace
 speed
 performancei
@@ -218,6 +240,7 @@ preformance
 responsiveness
 throughput
 performancethe
+touchpad
 touch_pad
 trackpad
 track_pad
@@ -229,6 +252,7 @@ touchscreen
 scroll_wheel
 touch_pad
 display
+display
 displays
 screen
 monitor
@@ -238,6 +262,7 @@ screenDG
 screens
 displays
 monitor
+browsing
 surfing
 browse
 reading,_surfing
@@ -248,6 +273,7 @@ surfed
 surfs
 internet_browsing
 browsing
+voice quality
 quality
 quaility
 fidelity
@@ -259,6 +285,7 @@ qualty
 qualityi
 qualitywhat
 reception
+reception
 fm_reception
 signal_strength
 signal
@@ -268,6 +295,7 @@ antenna
 signal
 signal_strength
 receptionthe
+messaging
 text_messaging
 texting
 google_hangout
@@ -278,6 +306,7 @@ chatting
 ios/android
 chat
 emails
+navigation
 nav
 navigating
 navigation
@@ -288,6 +317,7 @@ menu_navigation
 interface
 navigational
 mapping
+touch screen
 touchscreen
 touch_pad
 screen
@@ -298,6 +328,7 @@ screens
 mouse_pad
 display
 multitouch
+voice control
 control
 controlling
 answer_calls
@@ -308,6 +339,7 @@ speech
 pause/play
 voice
 mute
+remote
 remote_control
 remote
 remotes
@@ -319,6 +351,7 @@ ir_receiver
 remoteDG
 kinect_voice
 installation
+installation
 instillation
 instalation
 setup
@@ -329,6 +362,7 @@ installations
 application
 assembly
 setup
+setup
 set_up
 installation
 initial_setup
@@ -338,6 +372,7 @@ install
 hookup
 installation
 configuration
+readability
 visibility
 touch_sensitivity
 usability
@@ -348,6 +383,7 @@ visability
 contrast
 legibility
 crispness
+aspect ratio
 aspect
 characteristic
 feature
@@ -358,6 +394,7 @@ ratios
 aspect_ratio
 element
 ability
+pixel density
 pixels
 density
 pixel_density
@@ -369,6 +406,7 @@ resolution_DGDGDGDGxDGDGDG
 dpi
 resolution
 range
+range
 rangeDG
 ranges
 rangei
@@ -378,6 +416,7 @@ rangethe
 focal_range
 rangethis
 coverage
+strength
 strength
 signal_strength
 sturdiness
@@ -389,6 +428,7 @@ rigidity
 bandwidth
 coverage
 resolution
+resolution
 res
 resolutions
 resolution_DGDGDGDGxDGDGDG
@@ -399,6 +439,7 @@ resolutionDG
 DGDGDGDGxDGDGDG
 pixel_count
 camera
+camera
 cam
 cameras
 camcorder
@@ -408,6 +449,7 @@ camerai
 camerait
 cameras
 cameraDG
+sensor size
 size
 sensor
 form_factor
@@ -419,6 +461,7 @@ sizeDG
 sizeit
 sizei
 contrast
+contrast
 sharpness
 color_saturation
 saturation
@@ -428,6 +471,7 @@ shadow_detail
 color_accuracy
 dynamic_range
 black_levels
+cost
 costs
 cost
 costed
@@ -438,6 +482,7 @@ costthe
 costs
 price
 priced
+fashionable
 stylish
 chic
 stylish
@@ -448,6 +493,7 @@ super_cute
 feminine
 attractive
 classy
+cables
 cords
 cables
 cable
@@ -458,6 +504,7 @@ connectors
 cabling
 cable
 cords
+color
 colour
 color
 purple_color
@@ -468,6 +515,7 @@ orange_color
 colours
 teal_color
 shade
+waterproof
 water_proof
 water_resistant
 waterproof
@@ -479,6 +527,7 @@ shock_proof
 sweatproof
 weather_proof
 keyboard
+keyboard
 key_board
 keypad
 keyboards
@@ -489,6 +538,7 @@ keyboardi
 keyboardit
 keyboardthe
 signal
+signal
 signals
 signal_strength
 signals
@@ -498,6 +548,7 @@ reception
 signalthe
 connection
 singal
+storage
 storage
 storage_space
 storage_capacity
