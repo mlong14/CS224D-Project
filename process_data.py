@@ -16,7 +16,7 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
     neg_file = data_folder[2]
     vocab = defaultdict(float)
     with open(pos_file, "rb") as f:
-        for line in f:       
+        for line in f:
             rev = []
             rev.append(line.strip())
             if clean_string:
@@ -26,13 +26,13 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
-            datum  = {"y":1, 
-                      "text": orig_rev,                             
+            datum  = {"y":2,
+                      "text": orig_rev,
                       "num_words": len(orig_rev.split()),
                       "split": np.random.randint(0,cv)}
             revs.append(datum)
     with open(neu_file, "rb") as f:
-        for line in f:       
+        for line in f:
             rev = []
             rev.append(line.strip())
             if clean_string:
@@ -42,13 +42,13 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
-            datum  = {"y":1, 
-                      "text": orig_rev,                             
+            datum  = {"y":1,
+                      "text": orig_rev,
                       "num_words": len(orig_rev.split()),
                       "split": np.random.randint(0,cv)}
             revs.append(datum)
     with open(neg_file, "rb") as f:
-        for line in f:       
+        for line in f:
             rev = []
             rev.append(line.strip())
             if clean_string:
@@ -58,20 +58,20 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
-            datum  = {"y":0, 
-                      "text": orig_rev,                             
+            datum  = {"y":0,
+                      "text": orig_rev,
                       "num_words": len(orig_rev.split()),
                       "split": np.random.randint(0,cv)}
             revs.append(datum)
     return revs, vocab
-    
+
 def get_W(word_vecs, k=300):
     """
     Get word matrix. W[i] is the vector for word indexed by i
     """
     vocab_size = len(word_vecs)
     word_idx_map = dict()
-    W = np.zeros(shape=(vocab_size+1, k))            
+    W = np.zeros(shape=(vocab_size+1, k))
     W[0] = np.zeros(k)
     i = 1
     for word in word_vecs:
@@ -97,48 +97,48 @@ def load_bin_vec(fname, vocab):
                     word = ''.join(word)
                     break
                 if ch != '\n':
-                    word.append(ch)   
+                    word.append(ch)
             if word in vocab:
-               word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')  
+               word_vecs[word] = np.fromstring(f.read(binary_len), dtype='float32')
             else:
                 f.read(binary_len)
     return word_vecs
 
 def add_unknown_words(word_vecs, vocab, min_df=1, k=300):
     """
-    For words that occur in at least min_df documents, create a separate word vector.    
+    For words that occur in at least min_df documents, create a separate word vector.
     0.25 is chosen so the unknown vectors have (approximately) same variance as pre-trained ones
     """
     for word in vocab:
         if word not in word_vecs and vocab[word] >= min_df:
-            word_vecs[word] = np.random.uniform(-0.25,0.25,k)  
+            word_vecs[word] = np.random.uniform(-0.25,0.25,k)
 
 def clean_str(string, TREC=False):
     """
     Tokenization/string cleaning for all datasets except for SST.
     Every dataset is lower cased except for TREC
     """
-    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)     
-    string = re.sub(r"\'s", " \'s", string) 
-    string = re.sub(r"\'ve", " \'ve", string) 
-    string = re.sub(r"n\'t", " n\'t", string) 
-    string = re.sub(r"\'re", " \'re", string) 
-    string = re.sub(r"\'d", " \'d", string) 
-    string = re.sub(r"\'ll", " \'ll", string) 
-    string = re.sub(r",", " , ", string) 
-    string = re.sub(r"!", " ! ", string) 
-    string = re.sub(r"\(", " \( ", string) 
-    string = re.sub(r"\)", " \) ", string) 
-    string = re.sub(r"\?", " \? ", string) 
-    string = re.sub(r"\s{2,}", " ", string)    
+    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+    string = re.sub(r"\'s", " \'s", string)
+    string = re.sub(r"\'ve", " \'ve", string)
+    string = re.sub(r"n\'t", " n\'t", string)
+    string = re.sub(r"\'re", " \'re", string)
+    string = re.sub(r"\'d", " \'d", string)
+    string = re.sub(r"\'ll", " \'ll", string)
+    string = re.sub(r",", " , ", string)
+    string = re.sub(r"!", " ! ", string)
+    string = re.sub(r"\(", " \( ", string)
+    string = re.sub(r"\)", " \) ", string)
+    string = re.sub(r"\?", " \? ", string)
+    string = re.sub(r"\s{2,}", " ", string)
     return string.strip() if TREC else string.strip().lower()
 
 def clean_str_sst(string):
     """
     Tokenization/string cleaning for the SST dataset
     """
-    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)   
-    string = re.sub(r"\s{2,}", " ", string)    
+    string = re.sub(r"[^A-Za-z0-9(),!?\'\`]", " ", string)
+    string = re.sub(r"\s{2,}", " ", string)
     return string.strip().lower()
 
 def gensim2dict(w2v):
@@ -147,11 +147,11 @@ def gensim2dict(w2v):
         w2v_dict[word] = w2v[word]
     return w2v_dict
 
-if __name__=="__main__":    
-    #w2v_file = sys.argv[1]     
-    #data_folder = ["rt-polarity.pos","rt-polarity.neg"]    
-    data_folder= ["./data/positivePhrases_5_reduced.txt","./data/neutralPhrases_5_reduced.txt","./data/negativePhrases_5_reduced.txt"]
-    print "loading data...",        
+if __name__=="__main__":
+    #w2v_file = sys.argv[1]
+    #data_folder = ["rt-polarity.pos","rt-polarity.neg"]
+    data_folder= ["./data/positivePhrases_toy.txt","./data/neutralPhrases_toy.txt","./data/negativePhrases_toy.txt"]
+    print "loading data...",
     revs, vocab = build_data_cv(data_folder, cv=10, clean_string=True)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
     print "data loaded!"
@@ -169,6 +169,6 @@ if __name__=="__main__":
     rand_vecs = {}
     add_unknown_words(rand_vecs, vocab)
     W2, _ = get_W(rand_vecs)
-    cPickle.dump([revs, W, W2, word_idx_map, vocab], open("mr.p", "wb"))
+    cPickle.dump([revs, W, W2, word_idx_map, vocab], open("mr.p_toy", "wb"))
     print "dataset created!"
-    
+
