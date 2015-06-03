@@ -26,7 +26,7 @@ def build_data_cv(data_folder, cv=10, clean_string=True):
             words = set(orig_rev.split())
             for word in words:
                 vocab[word] += 1
-            datum  = {"y":1,
+            datum  = {"y":2,
                       "text": orig_rev,
                       "num_words": len(orig_rev.split()),
                       "split": np.random.randint(0,cv)}
@@ -150,7 +150,7 @@ def gensim2dict(w2v):
 if __name__=="__main__":
     #w2v_file = sys.argv[1]
     #data_folder = ["rt-polarity.pos","rt-polarity.neg"]
-    data_folder= ["./data/positivePhrases_5_reduced.txt","./data/neutralPhrases_5_reduced.txt","./data/negativePhrases_5_reduced.txt"]
+    data_folder= ["./data/positivePhrases_7_reduced.txt","./data/neutralPhrases_7_reduced.txt","./data/negativePhrases_7_reduced.txt"]
     print "loading data...",
     revs, vocab = build_data_cv(data_folder, cv=10, clean_string=True)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
@@ -169,6 +169,6 @@ if __name__=="__main__":
     rand_vecs = {}
     add_unknown_words(rand_vecs, vocab)
     W2, _ = get_W(rand_vecs)
-    cPickle.dump([revs, W, W2, word_idx_map, vocab], open("mr.p", "wb"))
+    cPickle.dump([revs, W, W2, word_idx_map, vocab], open("mr.p_7", "wb"))
     print "dataset created!"
 

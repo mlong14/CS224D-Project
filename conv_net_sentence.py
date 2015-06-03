@@ -289,7 +289,7 @@ def make_idx_data_cv(revs, word_idx_map, cv, max_l=51, k=300, filter_h=5):
 
 if __name__=="__main__":
     print "loading data...",
-    x = pickle.load(open("mr.p","rb"))
+    x = pickle.load(open("mr.p_5","rb"))
     revs, W, W2, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4]
     print "data loaded!"
     mode= sys.argv[1]
@@ -308,9 +308,10 @@ if __name__=="__main__":
         print "using: word2vec vectors"
         U = W
     results = []
-    r = range(0,1)
+    r = range(0,10)
     for i in r:
         datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=56,k=300, filter_h=5)
+        pdb.set_trace()
         perf = train_conv_net(datasets,
                               U,
                               lr_decay=0.95,
@@ -318,7 +319,7 @@ if __name__=="__main__":
                               conv_non_linear="relu",
                               hidden_units=[100,2],
                               shuffle_batch=True,
-                              n_epochs=25,
+                              n_epochs=1,
                               sqr_norm_lim=9,
                               non_static=non_static,
                               batch_size=50,
