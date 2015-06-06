@@ -9,6 +9,7 @@ Much of the code is modified from
 - https://groups.google.com/forum/#!topic/pylearn-dev/3QbKtCumAW4 (for Adadelta)
 """
 import pickle
+import cPickle
 import numpy as np
 try:
 	from collections import defaultdict, OrderedDict
@@ -20,6 +21,7 @@ import re
 import warnings
 import sys
 import pdb
+import time
 warnings.filterwarnings("ignore")
 
 #different non-linearities
@@ -38,6 +40,7 @@ def Iden(x):
 
 def train_conv_net(datasets,
                    U,
+                   cv,
                    img_w=300,
                    filter_hs=[3,4,5],
                    hidden_units=[100,2],
@@ -162,6 +165,7 @@ def train_conv_net(datasets,
     test_perf = 0
     cost_epoch = 0
     while (epoch < n_epochs):
+        start = time.time()
         epoch = epoch + 1
         mb_idx = 0
         if shuffle_batch:
@@ -179,15 +183,103 @@ def train_conv_net(datasets,
         train_perf = 1 - np.mean(train_losses)
         val_losses = [val_model(i) for i in xrange(n_val_batches)]
         val_perf = 1- np.mean(val_losses)
-        print('epoch %i, train perf %f %%, val perf %f' % (epoch, train_perf * 100., val_perf*100.))
+        end = time.time()
+        print('epoch %i, train perf %f %%, val perf %f, completed in time %f' % (epoch, train_perf * 100., val_perf*100.,end-start))
         if val_perf >= best_val_perf:
             best_val_perf = val_perf
             test_loss = test_model_all(test_set_x,test_set_y)
             test_perf = 1- test_loss
 
-    # dump model to file
-    with open('model.zip', 'w') as f:
-        pickle.dump(classifier, f)
+    # Save model
+    MLPparams = {"img_hw":img_h,"img_w":img_w,"filter shape":filter_shapes,"hidden_units":hidden_units,"dropout":dropout_rate,"batch_size":batch_size,"non_static":non_static,"lr_decay":lr_decay,"conv_non_linear":conv_non_linear,"non_static":non_static,"sqr_norm_lim":sqr_norm_lim,"shuffle_batch":shuffle_batch,"filter_hs":filter_hs}
+
+    modelfile = sys.argv[4]
+
+    f = file("{0}_{1}".format(modelfile,cv), 'wb')
+    cPickle.dump(classifier.get_params(), f, protocol=cPickle.HIGHEST_PROTOCOL)
+    cPickle.dump(MLPparams, f, protocol=cPickle.HIGHEST_PROTOCOL)
+    f.close()
+
+    return test_perf
+
+def test_conv_net(datasets,
+                   U,
+                   modelparams,
+                   img_w=300,
+                   filter_hs=[3,4,5],
+                   hidden_units=[100,2],
+                   dropout_rate=[0.5],
+                   shuffle_batch=True,
+                   n_epochs=25,
+                   batch_size=50,
+                   lr_decay = 0.95,
+                   conv_non_linear="relu",
+                   activations=[Iden],
+                   sqr_norm_lim=9,
+                   non_static=True):
+    rng = np.random.RandomState(3435)
+    img_h = len(datasets[1][0])-1
+    filter_w = img_w
+    feature_maps = hidden_units[0]
+    filter_shapes = []
+    pool_sizes = []
+    for filter_h in filter_hs:
+        filter_shapes.append((feature_maps, 1, filter_h, filter_w))
+        pool_sizes.append((img_h-filter_h+1, img_w-filter_w+1))
+    parameters = [("image shape",img_h,img_w),("filter shape",filter_shapes), ("hidden_units",hidden_units),("conv_non_linear", conv_non_linear),("sqr_norm_lim",sqr_norm_lim)]
+    print parameters
+
+    #define model architecture
+    index = T.lscalar()
+    x = T.matrix('x')
+    y = T.ivector('y')
+    Words = theano.shared(value = U, name = "Words")
+    zero_vec_tensor = T.vector()
+    zero_vec = np.zeros(img_w)
+    set_zero = theano.function([zero_vec_tensor], updates=[(Words, T.set_subtensor(Words[0,:], zero_vec_tensor))])
+    layer0_input = Words[T.cast(x.flatten(),dtype="int32")].reshape((x.shape[0],1,x.shape[1],Words.shape[1]))
+    conv_layers = []
+    layer1_inputs = []
+    for i in xrange(len(filter_hs)):
+        filter_shape = filter_shapes[i]
+        pool_size = pool_sizes[i]
+        conv_layer = LeNetConvPoolLayer(rng, input=layer0_input,image_shape=(batch_size, 1, img_h, img_w),
+                                filter_shape=filter_shape, poolsize=pool_size, non_linear=conv_non_linear)
+        layer1_input = conv_layer.output.flatten(2)
+        conv_layers.append(conv_layer)
+        layer1_inputs.append(layer1_input)
+    layer1_input = T.concatenate(layer1_inputs,1)
+    hidden_units[0] = feature_maps*len(filter_hs)
+    classifier = MLPDropout(rng, input=layer1_input, layer_sizes=hidden_units, activations=activations, dropout_rates=dropout_rate)
+
+    #define parameters of the model and update functions using adadelta
+    params = classifier.params
+    for conv_layer in conv_layers:
+        params += conv_layer.params
+    if non_static:
+        #if word vectors are allowed to change, add them as model parameters
+        params += [Words]
+
+    classifier.set_params(modelparams)
+
+    test_set_x = datasets[1][:,:img_h]
+    test_set_y = np.asarray(datasets[1][:,-1],"int32")
+
+    test_pred_layers = []
+    test_size = test_set_x.shape[0]
+    test_layer0_input = Words[T.cast(x.flatten(),dtype="int32")].reshape((test_size,1,img_h,Words.shape[1]))
+    for conv_layer in conv_layers:
+        test_layer0_output = conv_layer.predict(test_layer0_input, test_size)
+        test_pred_layers.append(test_layer0_output.flatten(2))
+    test_layer1_input = T.concatenate(test_pred_layers, 1)
+    test_y_pred = classifier.predict(test_layer1_input)
+    test_error = T.mean(T.neq(test_y_pred, y))
+    test_model_all = theano.function([x,y], test_error)
+
+    #predict
+    print '... predicting'
+    test_loss = test_model_all(test_set_x,test_set_y)
+    test_perf = 1- test_loss
 
     return test_perf
 
@@ -259,7 +351,7 @@ def safe_update(dict_to, dict_from):
         dict_to[key] = val
     return dict_to
 
-def get_idx_from_sent(sent, word_idx_map, max_l=51, k=300, filter_h=5):
+def get_idx_from_sent(sent, word_idx_map, max_l=56, k=300, filter_h=5):
     """
     Transforms sentence into a list of indices. Pad with zeroes.
     """
@@ -275,7 +367,7 @@ def get_idx_from_sent(sent, word_idx_map, max_l=51, k=300, filter_h=5):
         x.append(0)
     return x
 
-def make_idx_data_cv(revs, word_idx_map, cv, max_l=51, k=300, filter_h=5):
+def make_idx_data_cv(revs, word_idx_map, cv, max_l=56, k=300, filter_h=5):
     """
     Transforms sentences into a 2-d matrix.
     """
@@ -291,43 +383,74 @@ def make_idx_data_cv(revs, word_idx_map, cv, max_l=51, k=300, filter_h=5):
     test = np.array(test,dtype="int")
     return [train, test]
 
-
 if __name__=="__main__":
     print "loading data...",
-    x = pickle.load(open("mr.p_toy","rb"))
+    x = pickle.load(open("mr.p_complete_3","rb"))
     revs, W, W2, word_idx_map, vocab = x[0], x[1], x[2], x[3], x[4]
     print "data loaded!"
-    mode= sys.argv[1]
-    word_vectors = sys.argv[2]
-    if mode=="-nonstatic":
-        print "model architecture: CNN-non-static"
-        non_static=True
-    elif mode=="-static":
-        print "model architecture: CNN-static"
-        non_static=False
+    traintest = sys.argv[1]
+
     execfile("conv_net_classes.py")
-    if word_vectors=="-rand":
-        print "using: random vectors"
-        U = W2
-    elif word_vectors=="-word2vec":
-        print "using: word2vec vectors"
-        U = W
-    results = []
-    r = range(0,10)
-    for i in r:
-        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=56,k=300, filter_h=5)
-        perf = train_conv_net(datasets,
-                              U,
-                              lr_decay=0.95,
-                              filter_hs=[3,4,5],
-                              conv_non_linear="relu",
-                              hidden_units=[100,3],
-                              shuffle_batch=True,
-                              n_epochs=1,
-                              sqr_norm_lim=9,
-                              non_static=non_static,
-                              batch_size=50,
-                              dropout_rate=[0.5])
-        print "cv: " + str(i) + ", perf: " + str(perf)
-        results.append(perf)
-    print str(np.mean(results))
+
+    if traintest=="-train":
+        mode= sys.argv[2]
+        word_vectors = sys.argv[3]
+        if mode=="-nonstatic":
+            print "model architecture: CNN-non-static"
+            non_static=True
+        elif mode=="-static":
+            print "model architecture: CNN-static"
+            non_static=False
+        if word_vectors=="-rand":
+            print "using: random vectors"
+            U = W2
+        elif word_vectors=="-word2vec":
+            print "using: word2vec vectors"
+            U = W
+        results = []
+        r = range(0,10)
+        for i in r:
+            datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=23,k=300, filter_h=5)
+            perf = train_conv_net(datasets,
+                                  U,
+                                  cv=i,
+                                  lr_decay=0.95,
+                                  filter_hs=[3,4,5],
+                                  conv_non_linear="relu",
+                                  hidden_units=[100,3],
+                                  shuffle_batch=True,
+                                  n_epochs=15,
+                                  sqr_norm_lim=9,
+                                  non_static=non_static,
+                                  batch_size=50,
+                                  # batch_size=150,
+                                  dropout_rate=[0.5])
+            print "cv: " + str(i) + ", perf: " + str(perf)
+            results.append(perf)
+        print str(np.mean(results))
+    elif traintest=="-test":
+        # load model
+        modelfile = sys.argv[2]
+        i = int(modelfile[modelfile.find('_')+1:])
+
+        U = W # load word vectors
+
+        # load testing data
+        datasets = make_idx_data_cv(revs, word_idx_map, i, max_l=23,k=300, filter_h=5)
+
+        f = file(modelfile, 'r')
+        params = cPickle.load(f)
+        MLPparams = cPickle.load(f)
+        perf = test_conv_net(datasets,U,lr_decay=MLPparams['lr_decay'],
+                                  filter_hs=MLPparams['filter_hs'],
+                                  conv_non_linear=MLPparams['conv_non_linear'],
+                                  hidden_units=MLPparams['hidden_units'],
+                                  shuffle_batch=MLPparams['shuffle_batch'],
+                                  n_epochs=1,
+                                  sqr_norm_lim=MLPparams['sqr_norm_lim'],
+                                  batch_size=MLPparams['batch_size'],
+                                  dropout_rate=MLPparams['dropout'],modelparams=params)
+        print "perf: " + str(perf)
+        f.close()
+
+

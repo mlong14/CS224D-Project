@@ -172,6 +172,24 @@ class MLPDropout(object):
                 p_y_given_x = T.nnet.softmax(T.dot(next_layer_input, layer.W) + layer.b)
         return p_y_given_x
 
+    def get_params(self):
+    # return the network parameters as a dict (for saving values to file)
+        params = {}
+        for layer in self.layers:
+            for param in layer.params:
+                params[param.name] = param.eval()
+        return params
+        # return self.layers
+
+    def set_params(self, params):
+    # set the network parameters from given dict
+        for name, value in params.items():
+            for layer in self.layers:
+                for param in layer.params:
+                    if param.name == name:
+                        param = value
+        # self.layers = params;
+
 class MLP(object):
     """Multi-Layer Perceptron Class
 
