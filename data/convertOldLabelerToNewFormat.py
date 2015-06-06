@@ -23,18 +23,18 @@ def runConverter():
 	fIn = open(inputFile, "r")
 	with open(outputFile, "r") as fNum:
 		for label in fNum:
-			if (counter % 2) == 0:
-				line = fIn.readline()
-				print("Index: " + str(counter) + ",  Label: " + label)
-				print("Line: " + line)
-				with open(outputFile + "_" + label.rstrip("\n"),'a+') as fOut:
-					fOut.write(line + '\n')
-			counter+=1
+			#if (counter % 2) == 0:
+			line = fIn.readline()
+			print("Index: " + str(counter) + ",  Label: " + label)
+			print("Line: " + line)
+			with open(outputFile + "_" + label.rstrip("\n"),'a+') as fOut:
+				fOut.write(line + '\n')
+			#counter+=1
 	fIn.close()
 
 
 def main():
-	#runConverter()
+	runConverter()
 
 if __name__ == '__main__':
     main()
