@@ -150,7 +150,7 @@ def gensim2dict(w2v):
 if __name__=="__main__":
     #w2v_file = sys.argv[1]
     #data_folder = ["rt-polarity.pos","rt-polarity.neg"]
-    data_folder= ["./data/positivePhrases_toy.txt","./data/neutralPhrases_toy.txt","./data/negativePhrases_toy.txt"]
+    data_folder= ["./data/complete_3_class_pos","./data/complete_3_class_neu","./data/complete_3_class_neg"]
     print "loading data...",
     revs, vocab = build_data_cv(data_folder, cv=10, clean_string=True)
     max_l = np.max(pd.DataFrame(revs)["num_words"])
@@ -169,6 +169,6 @@ if __name__=="__main__":
     rand_vecs = {}
     add_unknown_words(rand_vecs, vocab)
     W2, _ = get_W(rand_vecs)
-    cPickle.dump([revs, W, W2, word_idx_map, vocab], open("mr.p_toy", "wb"))
+    cPickle.dump([revs, W, W2, word_idx_map, vocab], open("mr.p_complete_3", "wb"))
     print "dataset created!"
 
