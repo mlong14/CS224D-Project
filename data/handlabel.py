@@ -71,23 +71,25 @@ def runLabeler():
 					return
 				if ord(char) <= 53 and ord(char) >= 49: #49 = '1', 53 = '5'
 					print("You entered: " + char + "\n")
-					if ord(char) == 49:
-						with open(outputFile + "_" + str(ord(char) - 48),'a+') as fOut:
-							fOut.write(line)
-					elif ord(char) == 50:
-						with open(outputFile + "_2",'a+') as fOut:
-							fOut.write(line)
-					elif ord(char) == 51:
-						with open(outputFile + "_3",'a+') as fOut:
-							fOut.write(line)
-					elif ord(char) == 52:
-						with open(outputFile + "_4",'a+') as fOut:
-							fOut.write(line)
-					else:
-						with open(outputFile + "_5",'a+') as fOut:
-							fOut.write(line)
-					#with open(outputFile,'a') as fOut:
-					#	fOut.write(char + '\n')
+					with open(outputFile + "_" + str(ord(char) - 48),'a+') as fOut:
+						fOut.write(line)
+					# if ord(char) == 49:
+					# 	with open(outputFile + "_1",'a+') as fOut:
+					# 		fOut.write(line)
+					# elif ord(char) == 50:
+					# 	with open(outputFile + "_2",'a+') as fOut:
+					# 		fOut.write(line)
+					# elif ord(char) == 51:
+					# 	with open(outputFile + "_3",'a+') as fOut:
+					# 		fOut.write(line)
+					# elif ord(char) == 52:
+					# 	with open(outputFile + "_4",'a+') as fOut:
+					# 		fOut.write(line)
+					# else:
+					# 	with open(outputFile + "_5",'a+') as fOut:
+					# 		fOut.write(line)
+					##with open(outputFile,'a') as fOut:
+					##	fOut.write(char + '\n')
 				else:
 					print("Exiting... (you were at index: " + str(counter) + ")")
 					return
