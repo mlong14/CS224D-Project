@@ -47,7 +47,7 @@ Stanford University \\
 \maketitle
 
 \begin{abstract}
-Previous work in \textit{aspect-level sentiment analysis}---identifying the sentiment associated with products and their individual attributes, like battery life---have mostly been formulated as supervised learning problems, requiring known labels of both the relevant aspects and their sentiment. Here we propose a hybrid method where we first generate aspects from natural language text via unsupervised clustering of word vector representations, and secondly extract aspect-level sentiment. We then proceed to summarize these aspect-level sentiment within and across reviews and provide visualizations to aid consumers.
+Previous work in \textit{aspect-level sentiment analysis}---identifying the sentiment associated with products and their individual attributes, like battery life---have mostly been formulated as supervised learning problems, requiring known labels of both the relevant aspects and their sentiment. Such labeled datasets are rare, and often very small. Here we propose a scalable hybrid method where we first generate aspects from natural language text via unsupervised clustering of word vector representations, and secondly extract aspect-level sentiment. We then proceed to summarize these aspect-level sentiment within and across reviews and provide visualizations to aid consumers.
 \end{abstract}
 
 \section{Introduction}
@@ -56,9 +56,9 @@ In today's e-commercialized society, the consumer not only has access to online 
 
 Within the context of a product review, the first component, \textit{aspect discovery}, involves identifying individual ``aspects" (which could be the product itself, or features/attributes of the product). This is made more difficult by the fact that relevant aspects might differ across similar products. For example, for a given electronic item such as a mobile phone, relevant aspects could be the battery life, screen size, weight, cost, and more. Not all these aspects are relevant across other electronic items: for a computer, weight might not be an issue, and screen size might be moot for headphones. 
 
-The second component, \textit{aspect-specific sentiment analysis} involves subsequently identifying the sentiment---positive, neutral, or negative judgments---associated with aspects [1-6]. 
+The second component, \textit{aspect-specific sentiment analysis} involves subsequently identifying the sentiment---positive, neutral, or negative judgments---associated with aspects [1-6]. This essentially boils down to solving $n$ separate sentiment analysis problems per document, where $n$ is the number of aspects, and doing proper assignment of sentiment to aspects. Needless to say, this is a challenging task that is starting to receive much attention by researchers in the past few years.
 
-%Finally, The second problem involves aggregation of reviews, or constructing a \textit{meta-review}. Previous work [8-10] has shown that simple averaging of the ``stars" of reviews for an individual product is sub-optimal. Here we propose a deep learning architecture to aggregate the previously identified aspect-specific sentiment across multiple sentences within a review, and furthermore, to aggregate these sentiment across multiple reviews.
+One of the challenges is the lack of large labeled datasets to train supervised models on. In this paper, we propose a scalable hybrid method that is almost entirely unsupervised, that enables learning of aspect-specific sentiment on large datasets.
 
 
 
@@ -113,7 +113,7 @@ Our proposed workflow can be divided into two main parts: (unsupervised) {\bf As
 
 \section{Experiment} 
 
-\textbf{Dataset}: 6 million reviews of electronic products from Amazon.com [8].
+\textbf{Dataset}: 7.6 million reviews of electronic products from Amazon.com [8].
 
 
 
@@ -135,9 +135,6 @@ An additional step would be to label all unigrams with a sentiment analysis lexi
 \subsection{Model Training} We trained three different word2vec models. The most successful model was trained using the CBOW (continuous bag-of-words) model with a window size of 10 and feature dimension size of 300. We also ignored all words with total frequency count below 40 (this helped to remove many typos). We determined the performance of each model by querying the model with various aspects common to electronic products (e.g. "portability", "screen quality", etc).
 
 \subsection{word2vec Results}
-We queried our word2vec model and returned the top-10 results based on cosine similarity of the word vectors.
-
-
 
 
 %\begin{table}[h]
@@ -175,10 +172,17 @@ We queried our word2vec model and returned the top-10 results based on cosine si
 %\caption{Preliminary Results from word2vec model}
 %\end{table}
 
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=\columnwidth]{Aspects_long.png}
+\end{center}
+\caption{Aspects.}
+\label{aspectFig}
+\end{figure}
 
-As shown in the table above, words like \texttt{portability} returned many synonyms as well as product aspects that are related to it (e.g. \texttt{ruggedness} and \texttt{simplicity}). We also find that our model is capable of returning aspects that are specific and unique to the product category it is trained on. In this case of electronic products, a query like \texttt{contrast} returned words like \texttt{shadow\_detail}, \texttt{dynamic\_range}, \texttt{black\_levels} and \texttt{gamma}, which are aspects specific to devices like monitor displays and cameras.\\
-\\
-A query like \texttt{tripod} returned various aspects of camera tripods, many of them being features that are non-obvious to the layperson. For instance, \texttt{ball\_head} refers to a ball-type tripod heads and \texttt{quick\_release} refers to quick-release tripod mounts. Many of these queries would otherwise perform poorly if we were to use lexical databases like WordNet.
+We queried our word2vec model and returned the top-$n$ results based on cosine similarity of the word vectors, as illustrated in Figure \ref{aspectFig}. We found that $n=5$ is a good number that maintains the quality of aspects while allowing a good discovery ratio (Fig. \ref{aspectFig} was made with more than 5 closest results).
+
+As shown in Fig. \ref{aspectFig}, words like \texttt{portability} returned many synonyms as well as product aspects that are related to it (e.g. \texttt{ruggedness} and \texttt{simplicity}). Our model is also capable of returning aspects that are specific and unique to the product category it is trained on. In this case of electronic products, a query like \texttt{contrast} returned words like \texttt{shadow\_detail}, \texttt{dynamic\_range}, \texttt{black\_levels} and \texttt{gamma}, which are aspects specific to devices like monitor displays and cameras. Finally, the query \texttt{tripod} returned various aspects of camera tripods, many of them being features that are non-obvious to the layperson. For instance, \texttt{ball\_head} refers to a type of ball-shaped tripod head that allows free-pivoting along two rotational axes (as opposed to Cartesian axes), and \texttt{quick\_release} refers to tripod mounts that come with a quick-release plate. Many of these queries would otherwise perform poorly if performed on lexical databases like WordNet.
 
 %We can evaluate the attribute sentiments against the formal ratings provided by CNET or consumer reports. An aggregation of sentiment for individual reviews can also be compared against a user�s overall rating of the product.
 %We can evaluate the attribute clustering using standard cluster metrics. A projection to a 2-D space for visualization would also be valuable.
@@ -208,24 +212,17 @@ A query like \texttt{tripod} returned various aspects of camera tripods, many of
 
 
 
-\begin{figure}[ht]
-\begin{center}
-\includegraphics[width=.85\columnwidth]{Aspects_long.png}
-\end{center}
-\caption{Aspects.}
-\label{aspectFig}
-\end{figure}
 
 
 \subsection{Qualitative evaluation of sentiment}
 
 compare with google product reviews / cnet reviews
 
-Error analysis
-does not do comparative judgments.
+Error analysis (but actually we don't know if our model fails on these, we don't really have item level aspect
 
-My old computer was better...
+One common aspect that our method identified was \texttt{speed}, in terms of computer or processing speed. This also led to the discovery of \texttt{speed\_limit}, in the context of GPS reviews where GPSes are programmed with the speed limit of roads. While it might be arguable that knowing the road speed limit is a relevant aspect of a GPS, this highlighted the fact that our model might not be able to capture instances where words have different meanings in different contexts.
 
+One problem with aspect-specific sentiment analysis in product reviews is that many reviewers discuss how the new product fares in relation to an older, similar product they owned. For example, phrases like ``my old laptop was better" seems semantically positive, but reflects negative sentiment with respect to the product being discussed. We hoped that increasing the context window would allow the model to pick up comparative words (especially that interacts with which is the subject and object of comparison).
 
 
 
