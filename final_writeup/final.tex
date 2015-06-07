@@ -101,6 +101,7 @@ The first part of our workflow involves an unsupervised approach to generating a
 
 NER Model architecture
 
+Recurrent Neural Network
 
 \subsection{Aspect-Specific Sentiment Extraction}
 
@@ -118,7 +119,7 @@ We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10],
 \begin{center}
 \includegraphics[width=\columnwidth]{model_architecture.png}
 \end{center}
-\caption{CNN Model Architecture, modeled after Kim [10]. The input is an $n$ word context}
+\caption{CNN Model Architecture, modeled after Kim [10]. The input is an $n$ word context, where $n$ is odd, and the center word is an identified aspect. The input is convolved with different filter sizes (3,4,5) with $w$ features. It then undergoes max-pooling (1) to pick the strongest feature.}
 \label{architecture}
 \end{figure}
 
@@ -142,14 +143,14 @@ We trained three different word2vec models. The most successful model was traine
 \label{aspectFig}
 \end{figure}
 
-We queried our word2vec model and returned the top-$n$ results based on cosine similarity of the word vectors, as illustrated in Figure \ref{aspectFig}. We found that $n=5$ is a good number that maintains the quality of aspects while allowing a good discovery ratio (Fig. \ref{aspectFig} was made with more than 5 closest results).
+We queried our word2vec model and returned the top-$n$ results based on cosine similarity of the word vectors, as illustrated in Figure \ref{aspectFig}. After qualitative evaluation, we found that $n=5$ is a good number that maintains the quality of aspects while allowing a good discovery ratio.
 
 As shown in Fig. \ref{aspectFig}, words like \texttt{portability} returned many synonyms as well as product aspects that are related to it (e.g. \texttt{ruggedness} and \texttt{simplicity}). Our model is also capable of returning aspects that are specific and unique to the product category it is trained on. In this case of electronic products, a query like \texttt{contrast} returned words like \texttt{shadow\_detail}, \texttt{dynamic\_range}, \texttt{black\_levels} and \texttt{gamma}, which are aspects specific to devices like monitor displays and cameras. Finally, the query \texttt{tripod} returned various aspects of camera tripods, many of them being features that are non-obvious to the layperson. For instance, \texttt{ball\_head} refers to a type of ball-shaped tripod head that allows free-pivoting along two rotational axes (as opposed to Cartesian axes), and \texttt{quick\_release} refers to tripod mounts that come with a quick-release plate. Many of these queries would otherwise perform poorly if performed on lexical databases like WordNet.
 
 
-\subsubsection{NER Model?}
+\subsubsection{ Aspect detection model }
 
-NER Model results
+We extracted sentences with aspects that were within our discovered aspect list, and labeled each word as either being an aspect, or not. This served as the input to an RNN with some hyperparameters FIXME, . 
 
 
 \subsection{Aspect-Specific Sentiment Extraction}
@@ -173,17 +174,22 @@ We trained our CNN on this dataset, using a 10-fold cross validation strategy an
 
 Next, we sought to test our original idea of ``bootstrapping" labels using existing pre-trained models. On the one hand, there are models that are trained on much larger amounts of labeled data, sometimes even down to the unigram level, e.g. Socher et al [7]. On the other hand, these models are often trained on other domains ([7] was trained on movie reviews), and it is still an open question as to the degree of cross-domain transfer. To test this, we ran the Stanford CoreNLP Sentiment Annotator [7], which also outputs 5 classes, on our 6,000 labeled examples. The 5-class accuracy was 42.3\%, while the coarser 3 class accuracy was 51.1\%.
 
-We must be upfront and say that our point of performing this was \textbf{not} to use [7] as a baseline for comparison: indeed, it was trained out of domain, while our model was trained within domain. (Note, however, that [7] reported a test accuracy within their own dataset of 45.7\% on a 5 class task, and 85.4\% on a 2 class (positive/negative) task, so at least the first result is comparable to what we found.) Rather, we performed this analysis to gauge the upper limit on our model's reliability if it were only trained using labels obtained from out-of-domain pre-trained models (which, this analysis shows, has ~50\% accuracy with respect to a labeled gold standard on a 5 class task).
+We must be upfront and say that our point of performing this was \textbf{not} to use [7] as a baseline for comparison: indeed, it was trained out of domain, while our model was trained within domain. (Note, however, that [7] reported a test accuracy within their own dataset of 45.7\% on a 5 class task, so their performance is comparable to what we found.) Rather, we performed this analysis to gauge the upper limit on our model's reliability if it were only trained using labels obtained from out-of-domain pre-trained models (which, this analysis shows, has ~50\% accuracy with respect to a labeled gold standard on a 5 class task).
 
 \begin{table}[t]
 \begin{center}
 \begin{tabular}{lll}
+\multicolumn{1}{c}{\bf Aspect Detection Model}  &\multicolumn{1}{c}{\bf Recall}  \\ \hline
+Recurrent Neural Network \textsuperscript{1} & 8X.X\% \textbf{(FIXME)} \\
+&\\
+\end{tabular}
+\begin{tabular}{lll}
 \multicolumn{1}{c}{\bf Sentiment Model}  &\multicolumn{1}{c}{\bf 3-class Accuracy} &\multicolumn{1}{c}{\bf 5-class Accuracy} \\ \hline
- Our CNN\textsuperscript{1} & 79.4\% \textbf{(FIXME)} & 64\% \textbf{(FIXME)} \\
+ Convolutional Neural Network \textsuperscript{1} & 79.4\% \textbf{(FIXME)} & 64\% \textbf{(FIXME)} \\
  Pre-trained out-of-domain RNTN [7]\textsuperscript{2}       & 51.1\% & 42.3\% \\
 \end{tabular}
 \end{center}
-\caption{Accuracies for different models. \textsuperscript{1} was trained }
+\caption{Performance of different models. Top: Recall of the RNN in our aspect detection model. Bottom: Accuracies on the sentiment analysis task. \textsuperscript{1} is described in Fig. \ref{architecture} and was trained in domain, while \textsuperscript{2} is an RNTN pre-trained on movie review data. The interpretation is discussed more in text.}
 \label{ModelResultsTable}
 \end{table}
 
