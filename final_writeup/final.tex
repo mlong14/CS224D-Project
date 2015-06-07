@@ -113,7 +113,8 @@ Our proposed workflow can be divided into two main parts: (unsupervised) {\bf As
 
 \section{Experiment} 
 
-\textbf{Dataset}: 7.6 million reviews of electronic products from Amazon.com [8].
+\subsection{Dataset}
+The dataset that we used consists of 7.6 million reviews of electronic products from Amazon.com [8]. These reviews comprise 39.4 million sentences
 
 
 
@@ -224,6 +225,25 @@ As shown in Fig. \ref{aspectFig}, words like \texttt{portability} returned many 
 %			428		1171		2440		1233		728		6000
 
 
+\subsection{Quantitative evaluation of sentiment}
+
+We hand-labeled 6,000 examples that we 
+
+Using Socher et al (2013)'s model, trained on 
+
+\begin{table}[t]
+\begin{center}
+\begin{tabular}{lll}
+\multicolumn{1}{c}{\bf Model}  &\multicolumn{1}{c}{\bf 3-class Accuracy} &\multicolumn{1}{c}{\bf 5-class Accuracy} \\ \hline
+ Our CNN\textsuperscript{1} & 79.4\% \textbf{(FIXME)} & 64\% \textbf{(FIXME)} \\
+ Socher et al (2013)\textsuperscript{2}       & 51.1\% & 42.3\% \\
+\end{tabular}
+\end{center}
+\caption{Accuracies for different models. \textsuperscript{1} was trained}
+\label{ModelResultsTable}
+\end{table}
+
+
 
 \subsection{Qualitative evaluation of sentiment}
 
@@ -251,7 +271,7 @@ conclusion
 
 We would like to acknowledge funding for computing resources provided by the Deep Social Learning Lab at Stanford.
 
-\subsubsection*{References} % chronological. any citation style is acceptable, as long as it's consistent. Use APA
+\subsubsection*{References} % chronological. Use APA
 
 \small{
 
