@@ -6,7 +6,7 @@
 %\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
 
 
-\title{  Extracting and Aggregating Aspect-Level Sentiment from Product Reviews  }
+\title{  Extracting Aspect-Level Sentiment from Product Reviews  }
 
 
 \author{
@@ -47,7 +47,7 @@ Stanford University \\
 \maketitle
 
 \begin{abstract}
-Previous work in \textit{aspect-level sentiment analysis}---identifying the sentiment associated with products and their individual attributes, like battery life---have mostly been formulated as supervised learning problems, requiring known labels of both the relevant aspects and their sentiment. Such labeled datasets are rare, and often very small. Here we propose a scalable hybrid method where we first generate aspects from natural language text via unsupervised clustering of word vector representations, and secondly extract aspect-level sentiment. We then proceed to summarize these aspect-level sentiment within and across reviews and provide visualizations to aid consumers.
+Previous work in \textit{aspect-level sentiment analysis} -- identifying the sentiment associated with various attributes of a product -- have mostly been formulated as supervised learning problems, requiring labels of both the relevant aspects and their sentiment. Acquiring labels for sufficiently large datasets are however often costly and time consuming. Here we propose a largely unsupervised method for aspect-level sentiment analysis that consists of two steps: 1) discovery and extraction of aspects from product reviews via clustering of \texttt{word2vec} representations, 2) classifying aspect-specific sentiment using convolutional neural networks.
 \end{abstract}
 
 \section{Introduction}
