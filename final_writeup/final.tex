@@ -58,7 +58,7 @@ Within the context of a product review, the first component, \textit{aspect disc
 
 The second component, \textit{aspect-specific sentiment analysis} involves subsequently identifying the sentiment---positive, neutral, or negative judgments---associated with aspects [1-6]. This essentially boils down to solving $n$ separate sentiment analysis problems per document, where $n$ is the number of aspects, and doing proper assignment of sentiment to aspects. Needless to say, this is a challenging task that is starting to receive much attention by researchers in the past few years.
 
-One of the challenges is the lack of large labeled datasets to train supervised models on. In this paper, we propose a scalable hybrid method that is almost entirely unsupervised, that enables learning of aspect-specific sentiment on large datasets.
+One of the challenges is the lack of large labeled datasets with which to train supervised models. In this paper, we propose a scalable hybrid method that is almost entirely unsupervised, that enables learning of aspect-specific sentiment on large datasets.
 
 
 
@@ -66,9 +66,9 @@ One of the challenges is the lack of large labeled datasets to train supervised 
 
 \section{Related work}
 
-\textbf{Aspect Discovery}: Previous methods have used graphical models to attempt to extract 
+\textbf{Aspect Discovery}: Previous methods have used graphical models to attempt to extract latent sentiment.[1-3] use Latent Dirichlet Allocation, while [4] uses a Conditional Random Field model to model latent aspects. In particular, most of these methods have a generative model where there is a latent aspect (drawn from a mix of ``global" and ``local" topics [1-2], or latent to each sentence [3])
 
-Previous methods have relied on graphical models (e.g. Latent Dirichlet Allocation [1-3], or Conditional Random Fields [4]) to model latent aspects. We propose using similar unsupervised methods to generate candidate aspects via semantic word vector representations. 
+We propose using similar unsupervised methods to generate candidate aspects via semantic word vector representations. 
 
 In this paper, we propose extending recent successful advances in deep learning [6-7] to address this problem. In particular, we seek to improve and extend the work in [6], who used deep learning architectures like the Recursive Neural Tensor Network (RNTN) to extract aspect and sentiment in a single step. Unfortunately, supervised methods (e.g. [5-7]) that require labeled aspects-sentiment pairs for training are unscalable, and a better approach would be to automatically identify relevant aspects for each product (which, e.g. [1-3] try to do via topic modeling). 
 
@@ -104,9 +104,9 @@ Our proposed workflow can be divided into two main parts: (unsupervised) {\bf As
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=.85\columnwidth]{model_architecture.png}
+\includegraphics[width=\columnwidth]{model_architecture.png}
 \end{center}
-\caption{Model Architecture.}
+\caption{CNN Model Architecture.}
 \label{architecture}
 \end{figure}
 
@@ -213,6 +213,17 @@ As shown in Fig. \ref{aspectFig}, words like \texttt{portability} returned many 
 
 
 
+% Socher's model (down the rows) vs. human labels. So there were 16 instances that human says 2 and model says 1.
+%							True Labels
+%			1		2		3		4		5
+%1			9		16		5		10		4		44
+%2			168		495		404		180		124		1371
+%3			230		590		1528		488		303		3139
+%4			21		70		494		490		281		1356
+%5			0		0		9		65		16		90
+%			428		1171		2440		1233		728		6000
+
+
 
 \subsection{Qualitative evaluation of sentiment}
 
@@ -246,9 +257,10 @@ We would like to acknowledge funding for computing resources provided by the Dee
 
 [1] Titov, I., \& McDonald, R. T. (2008). A Joint Model of Text and Aspect Ratings for Sentiment Summarization. In {\it ACL} (Vol. 8, pp. 308-316).
 
-[2] Jo, Y., \& Oh, A. H. (2011). Aspect and sentiment unification model for online review analysis. In Proceedings of the fourth ACM international conference on Web search and data mining (pp. 815-824). ACM.
+[2] Brody, S., \& Elhadad, N. (2010). An unsupervised aspect-sentiment model for online reviews. In {\it Human Language Technologies: The 2010 Annual Conference of the North American Chapter of the Association for Computational Linguistics} (pp. 804-812). Association for Computational Linguistics.
 
-[3] Brody, S., \& Elhadad, N. (2010). An unsupervised aspect-sentiment model for online reviews. In {\it Human Language Technologies: The 2010 Annual Conference of the North American Chapter of the Association for Computational Linguistics} (pp. 804-812). Association for Computational Linguistics.
+[3] Jo, Y., \& Oh, A. H. (2011). Aspect and sentiment unification model for online review analysis. In Proceedings of the fourth ACM international conference on Web search and data mining (pp. 815-824). ACM.
+
 
 [4] Engonopoulos, N., Lazaridou, A., Paliouras, G., \& Chandrinos, K. (2011). ELS: a word-level method for entity-level sentiment analysis. In {\it Proceedings of the International Conference on Web Intelligence, Mining and Semantics}
 
