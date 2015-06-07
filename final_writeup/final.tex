@@ -77,15 +77,7 @@ In this paper, we propose extending recent successful advances in deep learning 
 
 \section{Approach}
 
-
-\subsection{Aspect Discovery}
-
-\textbf{Problem}: Given a short list of attributes (``seed" attributes), we discover an expanded list of attributes by returning the top $n$ related word vectors based on cosine similarity.
-
-
-
-\subsection{Aspect-Specific Sentiment Extraction}
-
+Our proposed workflow can be divided into two main parts: (unsupervised) {\bf Aspect Discovery} and {\bf Aspect-Specific Sentiment Extraction}. See Fig. \ref{workflow} for an illustration.
 
 
 \begin{figure}[ht]
@@ -96,11 +88,32 @@ In this paper, we propose extending recent successful advances in deep learning 
 \label{workflow}
 \end{figure}
 
-Our proposed workflow can be divided into two main parts: (unsupervised) {\bf Aspect Discovery} and {\bf Aspect-Specific Sentiment Extraction}. See Fig. \ref{workflow} for an illustration.
 
-\textbf{Problem}: Given a set of product reviews (for a single product), identify (aspect, aspect-related sentiment) tuples. This is a similar problem statement as [6]: we intend to expand upon their model.
+\subsection{Aspect Discovery}
 
-\textbf{Evaluation}: We will construct word cloud visualizations color coded to express sentiment. We will also perform comparisons with ``expert review" sites like CNET and DPReview (e.g. DPReview specifically rates digital cameras along certain chosen dimensions).
+The first part of our workflow involves an unsupervised approach to generating aspects. Our intuition is that we can use similarity in a high dimensional word vector embedding space to find closely related groups of words. Words may be grouped by syntactic class (e.g. nouns), by similarity in context (e.g. ``X is great"), or by other words that they co-occur with, etc, and we hoped to use this similarity to automatically discover new aspects from a starting seed list.
+
+\subsubsection{Preprocessing.} We tokenized our corpus using NLTK's punkt tokenizer [9] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams. We run word2vec (CBOW, Skipgram) to obtain a word vector representation of the data (varying hyper parameters like window size). 
+
+\subsubsection{Seed words and discovery.} We handcrafted a small set of 50 seed attributes from reading a random sample of product reviews. We then used this seed words and our word2vec model representation to discover more via closest cosine similarity.
+
+\subsubsection{NER Model?}
+
+NER Model architecture
+
+
+\subsection{Aspect-Specific Sentiment Extraction}
+
+The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words, then a good ``heuristic" would be that sentiment words closer to a particular aspect should be attributed to that aspect.
+
+Convolutional Neural Network Model
+
+[10]
+
+An additional step would be to label all unigrams with a sentiment analysis lexicon (Bing Liu's sentiment lexicon) or the Sentiment pipeline in CoreNLP [7]. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment. Next, we build off and improve on the model in [6]: we will use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data. Finally, we will have a summarization of aspect-related sentiment via visualization of our output, in terms of a word cloud of important aspects (e.g., sized by word frequency and colored by sentiment). 
+
+
+
 
 \begin{figure}[ht]
 \begin{center}
@@ -111,27 +124,29 @@ Our proposed workflow can be divided into two main parts: (unsupervised) {\bf As
 \end{figure}
 
 
-\section{Experiment} 
+\section{Experimental Results} 
 
-\subsection{Dataset}
-The dataset that we used consists of 7.6 million reviews of electronic products from Amazon.com [8]. These reviews comprise 39.4 million sentences
+\textbf{Dataset.} The dataset that we used consists of 7.6 million reviews of electronic products from Amazon.com [8]. These reviews comprise 39.4 million sentences. Each review is only labeled with the document-level 5 star rating (which we did not end up using). We focused our attention only on the raw natural language text, which is unlabeled.
 
 
 
 \subsection{Aspect Discovery}
 
-The first part of the project involves an unsupervised approach to generating aspects. We tokenized our corpus using NLTK's punkt tokenizer [9] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams. We run word2vec (CBOW, Skipgram) to obtain a word vector representation of the data (varying hyper parameters like window size). We start with a list of seed attributes across a wide range of products, and discover more via closest cosine similarity.
+results
+
+\subsubsection{NER Model?}
+
+NER Model results
+
 
 \subsection{Aspect-Specific Sentiment Extraction}
+
+
+
 
 An additional step would be to label all unigrams with a sentiment analysis lexicon (Bing Liu's sentiment lexicon) or the Sentiment pipeline in CoreNLP [7]. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment. Next, we build off and improve on the model in [6]: we will use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data. Finally, we will have a summarization of aspect-related sentiment via visualization of our output, in terms of a word cloud of important aspects (e.g., sized by word frequency and colored by sentiment). 
 
 
-
-
-
-
-\section{Results}
 
 \subsection{Model Training} We trained three different word2vec models. The most successful model was trained using the CBOW (continuous bag-of-words) model with a window size of 10 and feature dimension size of 300. We also ignored all words with total frequency count below 40 (this helped to remove many typos). We determined the performance of each model by querying the model with various aspects common to electronic products (e.g. "portability", "screen quality", etc).
 
@@ -247,6 +262,9 @@ Using Socher et al (2013)'s model, trained on
 
 \subsection{Qualitative evaluation of sentiment}
 
+\textbf{Evaluation}: We will construct word cloud visualizations color coded to express sentiment. We will also perform comparisons with ``expert review" sites like CNET and DPReview (e.g. DPReview specifically rates digital cameras along certain chosen dimensions).
+
+
 compare with google product reviews / cnet reviews
 
 Error analysis (but actually we don't know if our model fails on these, we don't really have item level aspect
@@ -302,9 +320,9 @@ We would like to acknowledge funding for computing resources provided by the Dee
 
 [8] McAuley, J., Targett, C., Shi, J., \& van den Hengel, A. (2015). Image-based recommendations on styles and substitutes. {\it ACM Special Interest Group on Information Retrieval (SIGIR)}
 
-[9] Bird, Steven, Loper, E. and Klein, E. (2009). Natural Language Processing with Python. O’Reilly Media Inc.
+[9] Bird, Steven, Loper, E. and Klein, E. (2009). Natural Language Processing with Python. O'Reilly Media Inc.
 
-
+[10] Kim, Y. (2014). Convolutional neural networks for sentence classification. arXiv preprint arXiv:1408.5882.
 
 %% this paper isn't that relevant. it's an evaluation system.
 %[2] Ward, C. B., Choi, Y., Skiena, S., \& Xavier, E. C. (2011). Empath: A framework for evaluating entity-level sentiment analysis. In {\it Emerging Technologies for a Smarter World (CEWIT), 2011 8th International Conference \& Expo}. (pp. 1-6). IEEE.
