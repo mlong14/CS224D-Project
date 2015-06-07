@@ -38,7 +38,8 @@ def generateLabeledExamplesForNER(lineCount, desiredNumber = 20000):
 				print("Processed: " + str(testCounter))
 			testCounter+=1
 			with open(outputFile, "a+") as fOut:
-				words = line.split()
+				#words = line.split()
+				words = line
 				outLine = ""
 				for word in words:
 					if word in aspectDictionary:
