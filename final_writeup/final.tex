@@ -3,6 +3,8 @@
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
 %\documentstyle[nips13submit_09,times,art10]{article} % For LaTeX 2.09
 
 
@@ -71,6 +73,11 @@ The second component, \textit{aspect-specific sentiment classification} involves
 
 % TODO: Desmond to add more references?
 
+\section{Dataset}
+The dataset that we used consists of 7.6 million reviews of electronic products from Amazon.com [8]. These reviews comprise 39.4 million sentences. Each review is only labeled with the document-level 5 star rating, which we did not end up using as it was too coarse. We focused our attention only on the raw natural language text, which is unlabeled.
+
+\textbf{Preprocessing.} We tokenized our corpus using NLTK's punkt tokenizer [9] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams.
+
 \section{Approach}
 
 Our proposed workflow can be divided into two main parts: {\bf Aspect Discovery} and {\bf Aspect-Specific Sentiment Classification}. See Fig. \ref{workflow} for an illustration.
@@ -79,18 +86,35 @@ Our proposed workflow can be divided into two main parts: {\bf Aspect Discovery}
 \begin{center}
 \includegraphics[width=.85\columnwidth]{workflow.png}
 \end{center}
-\caption{Proposed Workflow. We generate a list of seed aspects specific to the product category. We then discover neighboring aspects based on cosine distances of the seed aspects' \texttt{word2vec} representations. We then train a \textit{window aspect classifier} to discover more aspects from raw text. Next, we use a lexicon-based heuristic to \textit{pre-label} the expanded list of aspects to generate labels that are subsequently refined by hand. Lastly, we train a supervised CNN to do the \textit{aspect-specific sentiment classification} to produce \texttt{(aspect, sentiment)} tuples.}
+\caption{Proposed Workflow. We generate a list of seed aspects specific to the product category. We then discover neighboring aspects based on cosine distances to the seed aspects' \texttt{word2vec} representations. We then train a \textit{window aspect classifier} to discover more aspects from raw text. Next, we use a lexicon-based heuristic to \textit{pre-label} the expanded list of aspects which are subsequently refined by hand. Lastly, we train a supervised CNN to do the \textit{aspect-specific sentiment classification} to produce \texttt{(aspect, sentiment)} tuples.}
 \label{workflow}
 \end{figure}
 
-
 \subsection{Aspect Discovery}
 
-The first part of our workflow involves an unsupervised approach to generating aspects. Our intuition is that we can use similarity in a high dimensional word vector embedding space to find closely related groups of words. Words may be grouped by syntactic class (e.g. nouns), by similarity in context (e.g. ``X is great"), or by other words that they co-occur with, etc, and we hoped to use this similarity to automatically discover new aspects from a starting seed list.
+\subsubsection{Generating Seed Aspects}
+The first part of our workflow involves generating a list of seed aspects. These seed aspects do not require domain-specific knowledge and can be fairly general (the idea is that any layperson should be able to generate these words about most product categories). In our case, we generated 63 seed aspects specific to electronic products such as \textit{screen quality, construction, durability, cost}. 
 
-\subsubsection{Preprocessing.} We tokenized our corpus using NLTK's punkt tokenizer [9] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams. We run word2vec (CBOW, Skipgram) to obtain a word vector representation of the data (varying hyper parameters like window size). 
+\subsubsection{Aspect Discovery}
+To generate aspects in an unsupervised fashion, we trained a \texttt{word2vec} model on our dataset and discovered neighboring aspects based on cosine distances to the seed aspects' word vector representations. Our intuition is that we can use similarities in a high dimensional word vector embedding space to find closely related groups of words. Words may be grouped by syntactic class (e.g. nouns), by similarity in context (e.g. ``X is great"), or by other words that they co-occur with.
 
-\subsubsection{Seed words and discovery.} We handcrafted a small set of 63 seed attributes from reading a random sample of product reviews. We then used these seed aspects and our word2vec model representation to discover more aspects via closest cosine similarity.
+\subsubsection{Window Aspect Classifier}
+We used the output from the aspect discovery process as labels to train a sliding window-based aspect classifier. This allows us to run the classifier on the raw review text to extract more aspects that we might have missed out in the discovery process, or to extract aspects from other product categories.
+
+There are two classes: \texttt{ASP} for aspects and \texttt{O} for words that are not aspects.
+
+This model is a 2-layer neural network where the input is a window consisting of a word concantenated with its immediate neighbors. In this case of a window of size 3, the input is
+\begin{align}
+x^{(t)} = [ L x_{t-1}, L x_t, L x_{t+1} ] \in \mathbb{R}^{3d}
+\end{align}
+where $x_{t-1}, x_t, x_{t+1}$ are one-hot vectors into a word-representation matrix $L \in \mathbb{R}^{d \times \vert V \vert}$, where d is the \texttt{word2vec} dimensions and $\vert V \vert$ is the number of words in the vocabulary. We compute our predictions as:
+\begin{align}
+h &= tanh(W x^{(t)} + b_1)\\
+\hat{y} &= softmax (Uh + b_2)\\
+J(\theta) &= -\sum_{k=1}^{2} y_k log \hat{y}_k
+\end{align}
+
+where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss for the training set, we average $J(\theta)$ with respect to each training example.
 
 \subsubsection{NER Model?}
 
@@ -103,6 +127,8 @@ Recurrent Neural Network
 The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good ``heuristic" would be that sentiment words closer to a particular aspect should be attributed to that aspect. Hence, models should be able to make use of local context to help in sentiment attribution.
 
 We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10], who reported excellent results in sentence classification on many tasks, including sentiment analysis. We model our architecture, shown in Figure \ref{architecture} on [10].
+
+
 
 
 %An additional step would be to label all unigrams with a sentiment analysis lexicon (Bing Liu's sentiment lexicon) or the Sentiment pipeline in CoreNLP [7]. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment. Next, we build off and improve on the model in [6]: we will use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data. Finally, we will have a summarization of aspect-related sentiment via visualization of our output, in terms of a word cloud of important aspects (e.g., sized by word frequency and colored by sentiment). 
@@ -120,9 +146,6 @@ We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10],
 
 
 \section{Experimental Results} 
-
-\textbf{Dataset.} The dataset that we used consists of 7.6 million reviews of electronic products from Amazon.com [8]. These reviews comprise 39.4 million sentences. Each review is only labeled with the document-level 5 star rating, which we did not end up using as it was too coarse. We focused our attention only on the raw natural language text, which is unlabeled.
-
 
 \subsection{Aspect Discovery Model Training} 
 
