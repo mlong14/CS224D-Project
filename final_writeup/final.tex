@@ -49,19 +49,19 @@ Stanford University \\
 \maketitle
 
 \begin{abstract}
-Previous work in \textit{aspect-level sentiment analysis}---identifying the sentiment associated with various attributes of a product---have mostly been formulated as supervised learning problems, requiring labels of both the relevant aspects and their sentiment. Acquiring labels for sufficiently large datasets are however often costly and time consuming. Here we propose a largely unsupervised and scalable method for aspect-level sentiment analysis that consists of two steps: 1) discovery and extraction of aspects from product reviews via clustering of \texttt{word2vec} representations, 2) classifying aspect-specific sentiments using convolutional neural networks.
+Previous work in \textit{aspect-level sentiment analysis}---identifying the sentiment associated with various attributes of a product---have mostly been formulated as supervised learning problems, requiring labels of both the relevant aspects and their sentiment. Acquiring labels for sufficiently large datasets is, however, often costly and time consuming. Here, we propose a largely unsupervised and scalable method for aspect-level sentiment analysis that consists of two steps: 1) discovery and extraction of aspects from product reviews via clustering of \texttt{word2vec} representations, 2) classifying aspect-specific sentiments using convolutional neural networks.
 \end{abstract}
 
 \section{Introduction}
 
 
-In this day and age, consumers have unprecedented access to a deluge of information about products---most notably, reviews written by other consumers---with which to make his or her purchase decisions. Unfortunately, sifting through hundreds of reviews across tens of different websites to acquire specific information about the product and its important attributes (e.g. \textit{battery life}, \textit{screen size}, or \textit{weight} in the case of electronic products) is a time-consuming chore. Fortunately, the proliferation of customer reviews on websites such as Amazon.com has made it possible, with the right tools, to leverage the ``wisdom of the crowd" when making purchase decisions. Aspect-level sentiment analysis would allow consumers to effortlessly compare relatively unbiased sentiments of various aspects of multiple similar products.
+In this day and age, consumers have unprecedented access to a deluge of information about products---most notably, reviews written by other consumers---with which to make their purchase decisions. Unfortunately, sifting through hundreds of reviews across tens of different websites to acquire specific information about the product and its important attributes (e.g. \textit{battery life}, \textit{screen size}, or \textit{weight} in the case of electronic products) is a time-consuming chore. Fortunately, the proliferation of customer reviews on websites such as Amazon.com has made it possible, with the right tools, to leverage the ``wisdom of the crowd" when making purchase decisions. Aspect-level sentiment analysis would allow consumers to effortlessly compare relatively unbiased sentiments of various aspects of multiple similar products.
 
-However, one of the biggest challenges in training aspect-specific sentiment analysis models is the lack of large datasets labeled with sentiment on the aspect-level (for most datasets, sentiment labels exist on a document level). In this report, we propose a scalable and efficient method for extracting and classifying aspect-specific sentiments that is largely unsupervised. To do this, we tackle two separate but interconnected components of this problem: 1) discovery of aspects, and 2) aspect-specific sentiment classification.
+However, one of the biggest challenges in training aspect-specific sentiment analysis models is the lack of large datasets labeled with sentiment on the aspect-level (for most datasets, sentiment labels exist on a document level). In this report, we propose a scalable and efficient method for extracting and classifying aspect-specific sentiments that is largely unsupervised. To do this, we tackle two separate but interconnected components of this problem: 1) aspect discovery, and 2) aspect-specific sentiment classification.
 
-Within the context of a product review, the first component, \textit{aspect discovery}, involves identifying individual ``aspects" (which could be the product itself, or features/attributes of the product). This is made more difficult by the fact that relevant aspects might differ greatly across products in the same category. For example, aspects revelant to a cellular phone might be \textit{battery life}, \textit{screen size}, \textit{weight} and \textit{cost}. Not all these aspects are relevant across electronic items: for instance, \textit{screen size} might be irrelevant for a pair of headphones or a video game controller. We tackle this problem by generating new aspects from a list of seed words based on cosine similarities of the \texttt{word2vec} representations [1-2], and using the discovered aspects to train an aspect classifier.
+Within the context of a product review, the first component, \textit{aspect discovery}, involves identifying individual ``aspects" (which could be the product itself, or features/attributes of the product). This is made more difficult by the fact that relevant aspects might differ greatly across products in the same category. For example, aspects revelant to a cellular phone might be \textit{battery life}, \textit{screen size}, \textit{weight} and \textit{cost}. Not all these aspects are relevant across other electronic items: for instance, \textit{screen size} might be irrelevant for a pair of headphones or a video game controller. We tackle this problem by generating new aspects from a list of seed words based on cosine similarities of the \texttt{word2vec} representations [1-2], and using the discovered aspects to train an aspect classifier.
 
-The second component, \textit{aspect-specific sentiment classification} involves identifying the sentiment associated with each aspect [3-8]---\textit{very positive, positive neutral, negative or very negative}. We approach this problem by first using a lexicon-based heuristic as a baseline and as a means of \textit{pre-labeling} the data. We then refined the labels and trained a convolutional neural network [10] to tackle the sentiment analysis problem as a sentence classification problem.
+The second component, \textit{aspect-specific sentiment classification} involves identifying the sentiment associated with each aspect [3-8]---\textit{very positive, positive neutral, negative} or \textit{very negative}. We approach this problem by first using a lexicon-based heuristic as a baseline and as a means of \textit{pre-labeling} the data. We then refined the labels and trained a convolutional neural network [10] to tackle the sentiment analysis problem as a sentence classification problem.
 
 \section{Related work}
 
@@ -108,43 +108,41 @@ This model is a 2-layer neural network where the input is a window consisting of
 \begin{align}
 x^{(t)} = [ L x_{t-1}, L x_t, L x_{t+1} ] \in \mathbb{R}^{3d}
 \end{align}
-where $x_{t-1}, x_t, x_{t+1}$ are one-hot vectors into a word-representation matrix $L \in \mathbb{R}^{d \times \vert V \vert}$, where d is the \texttt{word2vec} dimensions and $\vert V \vert$ is the number of words in the vocabulary. We compute our predictions as:
+where $x_{t-1}, x_t, x_{t+1}$ are one-hot vectors into a word-representation matrix $L \in \mathbb{R}^{k \times \vert V \vert}$, where $k$ is the \texttt{word2vec} dimension and $\vert V \vert$ is the vocabulary size. We compute our predictions as:
 \begin{align}
-h &= tanh(W x^{(t)} + b_1)\\
-\hat{y} &= softmax (Uh + b_2)\\
-J(\theta) &= -\sum_{k=1}^{2} y_k \log \hat{y}_k
+h &= \tanh(W x^{(t)} + b_1)\\
+\hat{y} &= \text{softmax} (Uh + b_2)\\
+J(\theta) &= -\sum_{j=1}^{2} y_j \log \hat{y}_j
 \end{align}
 
 where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss for the training set, we average $J(\theta)$ with respect to each training example.
 
 \subsection{Aspect-Specific Sentiment Classification}
-The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good intuition would be that sentiment words closer to a particular aspect should be attributed to that aspect. Hence, models should be able to make use of local context to help in attributing sentiment.
+The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good intuition would be that sentiment words closer to a particular aspect should be attributed to that aspect (similar to [4,6]). Hence, models should be able to make use of local context to help in attributing sentiment.
 
 \textbf{Pre-labeling using Lexicon-based Heuristic}.
-Using the expanded list of aspects (from the aspect discovery process), we label them using a heuristic based on a sentiment lexicon by Hu and Liu [13]. We obtained phrases (i.e. training examples) consisting of an identified aspect in the middle, surrounded by a context window of $m$ words on both sides. We also padded these phrases with sentence start and end tags and zero-padded them to a fixed length. Next, we labeled all unigrams in these phrases with their unigram-specific sentiment according to the lexicon by [13] and averaged them to obtain the label for each phrase. Having pre-labeled our phrases according to this heuristic, we were then better able to refine the labels manually in less time (and hence less cost).
+Using the expanded list of aspects (from the aspect discovery process), we generate sentiment-labeled examples using a heuristic based on a sentiment lexicon by Hu and Liu [13]. We obtained phrases (i.e. training examples) consisting of an identified aspect in the middle, surrounded by a context window of $m$ words on both sides. We also padded these phrases with sentence start and end tags and zero-padded them to a fixed length. Next, we labeled all unigrams in these phrases with their unigram-specific sentiment according to the lexicon by [13] and averaged them to obtain the label for each phrase. Having pre-labeled our phrases according to this heuristic, we were then better able to refine the labels manually in less time (and hence less cost).
 
 
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\columnwidth]{model_architecture.png}
+\includegraphics[width=.9\columnwidth]{model_architecture2.png}
 \end{center}
-\caption{CNN Model Architecture as documented by Kim [10]. The input is an $2m+1$ word context, where $m$ is the number of words on each side of the aspect, and the center word is an identified aspect. The input is convolved with different filter sizes with $w$ features and is then max-pooled.}
+\caption{CNN Model Architecture as documented by Kim [10]. The input is an $2m+1$ word context, where $m$ is the number of words on each side of the aspect, and the center word is an identified aspect. The input is convolved with different filter sizes with $n_f$ features each and is then max-pooled. Some units are colored for illustration, and darker colors indicate higher values, which are captured by the max-pooling.}
 \label{architecture}
 \end{figure}
 
-\textbf{Sentiment Classification}. We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10], who reported excellent results in sentence classification on many tasks including sentiment analysis. We model our architecture as per [10] and as reproduced in Figure \ref{architecture}. This model has one convolutional layer trained on top of pre-trained word vectors obtained from a \texttt{word2vec} model trained on our dataset. However, unlike [10], our CNN uses only a single non-static channel which allows the word vectors to be further finetuned.
+\textbf{Sentiment Classification}. We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10], who reported excellent results in sentence classification on many tasks including sentiment analysis. We model our architecture as per [10] and as reproduced in Figure \ref{architecture}. This model has one convolutional layer trained on top of pre-trained word vectors obtained from a \texttt{word2vec} model trained on our dataset. However, unlike [10], our CNN uses only a single non-static channel which allows the word vectors to be further fine-tuned.
 
-Our input is represented as:
+For each phrase of length $2m$+$1$, we concatenate its word vectors $x_i$: % $X_{1:2m+1}$:
 \begin{align}
-	x_{1:2m+1} = x_1 \oplus x_2 \oplus \ldots \oplus x_{m+1} \oplus \ldots \oplus x_{2m+1}
+	X_{1:2m+1} = x_1 \oplus x_2 \oplus \ldots \oplus x_{m+1} \oplus \ldots \oplus x_{2m+1}
 \end{align}
-where $\oplus$ is the concatenation operator, $n$ is the sentence length, $x_i \in \mathbb{R}^k$ is a k-dimensional word vector of the i-th word, and $x_{m+1}$ is the aspect word. Convolution using multiple filters $w \in \mathbb{R}^{hk}$ of various sizes $h$ is applied to the input to produce new features. A feature $c_i$ is generated from a window of words $x_{i:i+h-1}$ as such:
+where $\oplus$ is the concatenation operator. Note that $x_{m+1}$, the center word, is an identified aspect. We prepare convolution filters of variable filter size $h$ (each filter $\textbf{w} \in \mathbb{R}^{hk}$). In Figure \ref{architecture}, the purple convolution illustrates a single filter \textbf{w} of size $h=3$ operating on a phrase of size $2m+1 = 7$, producing $2m+1 - h = 4$ features, and we have $n_\text{f}$ such filters for each filter size. Formally, a feature $c_i$ produced by a filter \textbf{w} is generated from a window of words $X_{i:i+h-1}$ via a non-linearity (in our case, the rectified linear unit operator ReLU):
 \begin{align}
-c_i = ReLU(\textbf{w} \cdot \textbf{x}_{i:i+h-1} + b)
+c_i = \text{ReLU}(\textbf{w} * X_{i:i+h-1} + b)
 \end{align}
-This filter is applied across the input phrase to produce a feature map $\textbf{c} = [c_1, c_2, \ldots, c_{n-h+1}] \in \mathbb{R}^(n-h+1)$. We then apply a max-over-time pooling operation over each feature map and retain the maximum value $\hat{c} = max \{\textbf{c}\}$ for each filter.
-
-Lastly, we employ dropout [14] in the fully connected layer and take the softmax output to obtain the predictions for all five sentiment classes.
+where $*$ is the convolution operator and $b \in \mathbb{R}$ is a bias term . This filter is applied across the input phrase to produce a feature map $\textbf{c} = [c_1, c_2, \ldots, c_{(2m+1)-h+1}] \in \mathbb{R}^{((2m+1)-h+1)}$. We then apply a max-over-time pooling operation over each feature map to obtain the largest feature activation value $\hat{c} = \max \{\textbf{c}\}$ for each filter. This is done separately for each of $n_f$ filters for each filter size $h$. Lastly, we employ dropout [14] in the fully connected layer and take the softmax output to obtain the predictions for all five sentiment classes.
 
 
 \section{Experimental Results} 
@@ -156,7 +154,7 @@ Lastly, we employ dropout [14] in the fully connected layer and take the softmax
 \begin{center}
 \includegraphics[width=\columnwidth]{Aspects_long.png}
 \end{center}
-\caption{Aspects Discovery. Word clouds generated by seeding \texttt{portability} (left), \texttt{contrast} (middle), and \texttt{tripod} (right). Words are sized according to cosine similarity with the seed word.}
+\caption{Aspects Discovery. Word clouds generated by seeding \texttt{portability} (left), \texttt{contrast} (middle), and \texttt{tripod} (right) and are grouped by color according to the seed word. Words are sized according to cosine similarity with the seed word.}
 \label{aspectFig}
 \end{figure}
 
@@ -166,7 +164,7 @@ Figure \ref{aspectFig} illustrates the top-$n$ closest results for the seed word
 
 As shown in Fig. \ref{aspectFig}, words like \texttt{portability} returned many synonyms as well as product aspects that are related to it (e.g. \texttt{ruggedness} and \texttt{simplicity}). Our model is also capable of returning aspects that are specific and unique to the product category it is trained on. In this case of electronic products, a query like \texttt{contrast} returned words like \texttt{shadow\_detail}, \texttt{dynamic\_range}, \texttt{black\_levels} and \texttt{gamma}, which are aspects specific to devices like monitor displays and cameras. Finally, the query \texttt{tripod} returned various aspects of camera tripods, many of them being features that are non-obvious to the layperson. For instance, \texttt{ball\_head} refers to a type of ball-shaped tripod head that allows free-pivoting along two rotational axes (as opposed to Cartesian axes), and \texttt{quick\_release} refers to tripod mounts that come with a quick-release plate. Many of these queries would otherwise perform poorly if performed on lexical databases like WordNet.
 
-We also found that out of 336 discovered aspects (56*5 neighboring aspects + 56 seed aspects), only 9 words are considered to be non-aspect words, giving us an accuracy of \textbf{97.32\%}. We also found that the aspect discovery process was useful in discovering unintuitive but highly related words such as acronyms (e.g. \texttt{ui} and \texttt{gui}, \texttt{kb} and \texttt{keyboard}), common typos (e.g. \texttt{qaulity}, \texttt{quaility}) and synonymous words (e.g. \texttt{trackpad}, \texttt{touchpad}).
+Out of 336 discovered aspects (56*5 neighboring aspects + 56 seed aspects), we judged only 9 words to be non-aspect words, giving an accuracy of \textbf{97.32\%}. We also found that the aspect discovery process was useful in discovering unintuitive but highly related words such as acronyms (e.g. \texttt{ui} and \texttt{gui}, \texttt{kb} and \texttt{keyboard}), common typos (e.g. \texttt{qaulity}, \texttt{quaility}) and synonymous words (e.g. \texttt{trackpad}, \texttt{touchpad}).
 
 \subsubsection{Window Aspect Classifier}
 We performed hyperparameter tuning on our window classifier and found that window of size 5, regularization strength of 0.001 and learning rate of 0.01 using a minibatch schedule produced the best performing model. This was trained on a randomly sampled subset of 20,000 sentences, each of which containing at least one aspect. The training dataset consists of 48,368 \texttt{ASP}-labeled words and 848,218 \texttt{O}-labeled words. 
@@ -194,11 +192,11 @@ Sliding Window Classifier & 92.45\%  & 99.15\%\\
 \end{table}
 
 \subsubsection{Pre-labeling}
-Using the aforementioned steps, we obtained the 6,000 labeled examples which consisted of an identified aspect in the middle, surrounded by a context window of 5 words on both sides. We padded these phrases with sentence start and end tags and zero vectors. Next, we manually re-labeled these 6,000 examples on a 5 point scale, corresponding to \textit{very negative, negative, neutral, positive, and very positive}.
+Using the aforementioned steps, we sampled 6,000 labeled examples which consisted of an identified aspect in the middle, surrounded by a context window of 5 words on both sides. We padded these phrases with sentence start and end tags and zero vectors. Next, we manually re-labeled these 6,000 examples on a 5 point scale, corresponding to \textit{very negative, negative, neutral, positive, and very positive}.
 
 Our lexicon-based heuristic has a \textbf{75.25\%} classification accuracy with 3 classes, i.e. only 24.75\% of the 6,000 examples has to be re-labeled into 5 classes. This pre-labeling greatly sped up our labeling process to approximately 8 man-hours for all 6,000 examples. This heuristic also provides us with a baseline accuracy for our CNN sentence classification model.
 
-Our labeled dataset of 6,000 examples is comparable to existing available aspect-sentiment datasets (e.g. the Beer Advocate dataset and Camera Review dataset reported in [8] had 8,000 and 4,000 labeled examples respectively).
+It is worth noting that our labeled dataset of 6,000 examples is comparable to existing available aspect-sentiment datasets (e.g. the Beer Advocate dataset and Camera Review dataset reported in [8] had 8,000 and 4,000 labeled examples respectively).
 
 % Socher's model (down the rows) vs. human labels. So there were 16 instances that human says 2 and model says 1.
 %							True Labels
@@ -222,7 +220,7 @@ The difference in accuracy was largely a result of testing the model out of doma
 \subsubsection{Aggregated Aspect-specific Reviews}
 \begin{figure}[ht]
 \begin{center}
-\includegraphics[width=\columnwidth]{productCloud.png}
+\includegraphics[width=.9\columnwidth]{productCloud.png}
 \end{center}
 \caption{Word-cloud visualizations of how \texttt{(aspect, sentiment)} tuples across multiple products can be summarized. The size of the aspect is proportional to the frequency, while the colors represent sentiment, interpolated between blue (positive) and red (negative). }
 \label{productFig}
@@ -230,9 +228,9 @@ The difference in accuracy was largely a result of testing the model out of doma
 
 We next performed a qualitative evaluation of a potential application of our model: aggregated aspect-specific reviews. We considered reviews of two popular cell phones, the Samsung Galaxy S6 and the Apple iPhone 6, and provided a visualization of the averaged sentiment in Fig. \ref{productFig}, where the word size reflects the frequency of occurrences of that aspect in the reviews, and the colors represented the sentiment associated with it. 
 
-The visualization in Fig. \ref{productFig} shows that the single most talked about aspect of the Galaxy S6 is its battery life, which also happens to be rated rather negatively. In contrast, "battery life" is less mentioned in the reviews of the iPhone 6 and is rated more positively. The biggest complaint of the iPhone 6 seems to be its cost, while that was mentioned a lot less in the reviews of the Galaxy S6 (below the threshold we set for our visualization). Thus, a consumer who might be deciding between the Galaxy S6 and the iPhone 6 would be able to weigh specific features (e.g. how important is battery life for this consumer) very quickly and accurately without having to read through multiple (and often lengthy) reviews.
+The visualization in Fig. \ref{productFig} shows that the single most talked about aspect of the Galaxy S6 is its battery life, which also happens to be rated rather negatively. In contrast, battery life is mentioned far less in the reviews of the iPhone 6 and is rated more positively. The biggest complaint of the iPhone 6 seems to be its cost, while that was mentioned a lot less in the reviews of the Galaxy S6 (below the threshold we set for our visualization). Thus, a consumer who might be deciding between the Galaxy S6 and the iPhone 6 would be able to weigh specific features (e.g. how important is battery life for this consumer) very quickly and accurately without having to read through multiple (and often lengthy) reviews.
 
-One other source of aspect-specific reviews are specialized websites that offer ``expert reviews", and often offers ratings of individual (but broader) aspects. These reviews, however, are based on the opinion of one person or a small team of reviewers and are inherently biased. As a comparison, we examined reviews of the same two products on cnet.com, a website that specializes in electronics product reviews. The Galaxy S6 on cnet.com received an 8 (out of 10) on Battery life, 9 on Features, 9 on Design, 8 on Camera and 9 on Performance. The editor's rating was 8.9 overall (4.5 stars), and the average user review was about 3 stars from 41 user reviews. The iPhone 6 was given a 9/10 for each of Design, Features and Performance, and an overall editor rating of 9/10, or 4.5 stars, compared with about 4 stars from 43 user reviews. Interestingly, the cnet editor's overall ratings for the Galaxy S6 seemed to diverge with the average cnet user rating (4.5 vs. 3). Moreover, the cnet editor's high rating of the Galaxy's battery life seemed at odds with the general sentiment of the average Amazon user. This suggests some discrepancy between ``expert reviewers" and ``average reviewers" (i.e. the consumers). This application also suggests that leveraging the "wisdom of the crowd" might provide more accurate reviews of a product than reviews from individual ``experts".
+One other source of aspect-specific reviews are specialized websites that offer ``expert reviews", and often offers ratings of individual (but broader) aspects. These reviews, however, are based on the opinion of one person or a small team of reviewers and are inherently biased. As a comparison, we examined reviews of the same two products on cnet.com, a website that specializes in electronics product reviews. The Galaxy S6 on cnet.com received an 8 (out of 10) on Battery Life, 9 on Features, 9 on Design, 8 on Camera and 9 on Performance. The editor's rating was 8.9 overall (4.5 stars), and the average user review was about 3 stars from 41 user reviews. The iPhone 6 was given a 9/10 for each of Design, Features and Performance, and an overall editor rating of 9/10, or 4.5 stars, compared with about 4 stars from 43 user reviews. Interestingly, the cnet editor's overall ratings for the Galaxy S6 seemed to diverge with the average cnet user rating (4.5 vs. 3). Moreover, the cnet editor's high rating of the Galaxy's battery life seemed at odds with the general sentiment of the average Amazon user. This suggests some discrepancy between ``expert reviewers" and ``average reviewers" (i.e. the consumers). This application also suggests that leveraging the "wisdom of the crowd" might provide more accurate reviews of a product than reviews from individual ``experts".
 
 \subsubsection{Error Analysis}
 Below we describe some of the bigger errors in our approach.
