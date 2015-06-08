@@ -49,7 +49,7 @@ Stanford University \\
 \maketitle
 
 \begin{abstract}
-Previous work in \textit{aspect-level sentiment analysis}---identifying the sentiment associated with various attributes of a product---have mostly been formulated as supervised learning problems, requiring labels of both the relevant aspects and their sentiment. Acquiring labels for sufficiently large datasets are however often costly and time consuming. Here we propose a largely unsupervised and scalable method for aspect-level sentiment analysis that consists of two steps: 1) discovery and extraction of aspects from product reviews via clustering of \texttt{word2vec} [i-ii] representations, 2) classifying aspect-specific sentiments using convolutional neural networks.
+Previous work in \textit{aspect-level sentiment analysis}---identifying the sentiment associated with various attributes of a product---have mostly been formulated as supervised learning problems, requiring labels of both the relevant aspects and their sentiment. Acquiring labels for sufficiently large datasets are however often costly and time consuming. Here we propose a largely unsupervised and scalable method for aspect-level sentiment analysis that consists of two steps: 1) discovery and extraction of aspects from product reviews via clustering of \texttt{word2vec} representations, 2) classifying aspect-specific sentiments using convolutional neural networks.
 \end{abstract}
 
 \section{Introduction}
@@ -121,14 +121,14 @@ where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss fo
 The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good intuition would be that sentiment words closer to a particular aspect should be attributed to that aspect. Hence, models should be able to make use of local context to help in attributing sentiment.
 
 \textbf{Pre-labeling using Lexicon-based Heuristic}.
-Using the expanded list of aspects (from the aspect discovery process), we label them using a heuristic based on a sentiment lexicon by Hu and Liu [13]. We obtained phrases (i.e. training examples) consisting of an identified aspect in the middle, surrounded by a context window of $m$ words on both sides. We also padded these phrases with sentence start and end tags and zero-padded them to a fixed length. Next, we label all unigrams in these phrases with their unigram-specific sentiment according to the lexicon by [13] and average them to obtain the label for each phrase. Having pre-labeled out phrases according to this heuristic, we are now better able to refine the labels manually in less time (and hence less cost).
+Using the expanded list of aspects (from the aspect discovery process), we label them using a heuristic based on a sentiment lexicon by Hu and Liu [13]. We obtained phrases (i.e. training examples) consisting of an identified aspect in the middle, surrounded by a context window of $m$ words on both sides. We also padded these phrases with sentence start and end tags and zero-padded them to a fixed length. Next, we labeled all unigrams in these phrases with their unigram-specific sentiment according to the lexicon by [13] and averaged them to obtain the label for each phrase. Having pre-labeled our phrases according to this heuristic, we were then better able to refine the labels manually in less time (and hence less cost).
 
 
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\columnwidth]{model_architecture.png}
 \end{center}
-\caption{CNN Model Architecture as documented Kim [10]. The input is an $2m+1$ word context, where $m$ is the number of words on each side of the aspect, and the center word is an identified aspect. The input is convolved with different filter sizes with $w$ features and is then max-pooled.}
+\caption{CNN Model Architecture as documented by Kim [10]. The input is an $2m+1$ word context, where $m$ is the number of words on each side of the aspect, and the center word is an identified aspect. The input is convolved with different filter sizes with $w$ features and is then max-pooled.}
 \label{architecture}
 \end{figure}
 
@@ -194,7 +194,7 @@ Sliding Window Classifier & 92.45\%  & 99.15\%\\
 \end{table}
 
 \subsubsection{Pre-labeling}
-Using the aforementioned steps, we obtained the 6,000 labeled examples which consisted of an identified aspect in the middle, surrounded by a context window of 5 words on both sides. We padded these phrases with sentence start and end tags and zero vectors. Next, we manually re-labeled these 6,000 examples on a 5 point scale, corresponding to Very Negative, Negative, Neutral, Positive, and Very Positive. 
+Using the aforementioned steps, we obtained the 6,000 labeled examples which consisted of an identified aspect in the middle, surrounded by a context window of 5 words on both sides. We padded these phrases with sentence start and end tags and zero vectors. Next, we manually re-labeled these 6,000 examples on a 5 point scale, corresponding to \textit{very negative, negative, neutral, positive, and very positive}.
 
 Our lexicon-based heuristic has a \textbf{75.25\%} classification accuracy with 3 classes, i.e. only 24.75\% of the 6,000 examples has to be re-labeled into 5 classes. This pre-labeling greatly sped up our labeling process to approximately 8 man-hours for all 6,000 examples. This heuristic also provides us with a baseline accuracy for our CNN sentence classification model.
 
