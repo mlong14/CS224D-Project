@@ -69,6 +69,8 @@ The second component, \textit{aspect-specific sentiment classification} involves
 
 % Add in "Simpler is better" paper
 
+[aspect parser paper]: rule-based approach to extracting aspects
+
 \textbf{Aspect-specific Sentiment Classification}: There has been recent work on using convolutional neural networks (CNN) trained on top of pre-trained word vectors for sentence-level classification tasks [Kim]. Specifically, [Kim] demonstrated the use of CNN to outperform state-of-the-art models on sentiment analysis classification tasks. Other deep learning approaches for aspect-based sentiment analysis use hierarchical models such as a Recursive Neural Tensor Network (RNTN) to extract aspect-sentiment tuples. Unfortunately, such supervised methods (e.g. [5-7]) that require labeled aspects-sentiment pairs for training are unscalable, and a better approach would be to automatically identify relevant aspects for each product (which, e.g. [1-3] try to do via topic modeling). 
 
 % TODO: Desmond to add more references?
@@ -120,7 +122,7 @@ where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss fo
 
 NER Model architecture
 
-Recurrent Neural Network
+Window Aspect Classifier
 
 \subsection{Aspect-Specific Sentiment Extraction}
 
@@ -168,7 +170,7 @@ As shown in Fig. \ref{aspectFig}, words like \texttt{portability} returned many 
 
 \subsubsection{ Aspect detection model }
 
-We extracted sentences with aspects that were within our discovered aspect list, and labeled each word as either being an aspect, or not. This served as the input to an RNN with some hyperparameters FIXME, . 
+We extracted sentences with aspects that were within our discovered aspect list, and labeled each word as either being an aspect, or not. This served as the input to a window aspect classifier with some hyperparameters FIXME, . 
 
 
 \subsection{Aspect-Specific Sentiment Extraction}
@@ -198,7 +200,7 @@ We must be upfront and say that our point of performing this was \textbf{not} to
 \begin{center}
 \begin{tabular}{lll}
 \multicolumn{1}{c}{\bf Aspect Detection Model}  &\multicolumn{1}{c}{\bf Recall}  \\ \hline
-Recurrent Neural Network \textsuperscript{1} & 8X.X\% \textbf{(FIXME)} \\
+Sliding Window Classifier \textsuperscript{1} & 8X.X\% \textbf{(FIXME)} \\
 &\\
 \end{tabular}
 \begin{tabular}{lll}
