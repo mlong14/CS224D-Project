@@ -71,7 +71,7 @@ The second component, \textit{aspect-specific sentiment classification} involves
 
 [aspect parser paper]: rule-based approach to extracting aspects
 
-\textbf{Aspect-specific Sentiment Classification}: There has been recent work on using convolutional neural networks (CNN) trained on top of pre-trained word vectors for sentence-level classification tasks [Kim]. Specifically, [Kim] demonstrated the use of CNN to outperform state-of-the-art models on sentiment analysis classification tasks. Other deep learning approaches for aspect-based sentiment analysis use hierarchical models such as a Recursive Neural Tensor Network (RNTN) to extract aspect-sentiment tuples. Unfortunately, such supervised methods (e.g. [5-7]) that require labeled aspects-sentiment pairs for training are unscalable, and a better approach would be to automatically identify relevant aspects for each product (which, e.g. [1-3] try to do via topic modeling). 
+\textbf{Aspect-specific Sentiment Classification}: There has been recent work on using convolutional neural networks (CNN) trained on top of pre-trained word vectors for sentence-level classification tasks [10]. Specifically, [10] demonstrated the use of CNN to outperform state-of-the-art models on sentiment analysis classification tasks. Other deep learning approaches for aspect-based sentiment analysis use hierarchical models such as a Recursive Neural Tensor Network (RNTN) to extract aspect-sentiment tuples. Unfortunately, such supervised methods (e.g. [5-7]) that require labeled aspects-sentiment pairs for training are unscalable, and a better approach would be to automatically identify relevant aspects for each product (which, e.g. [1-3] try to do via topic modeling). 
 
 % TODO: Desmond to add more references?
 
@@ -82,7 +82,7 @@ The dataset that we used consists of 7.6 million reviews of electronic products 
 
 \section{Approach}
 
-Our proposed workflow can be divided into two main parts: {\bf Aspect Discovery} and {\bf Aspect-Specific Sentiment Classification}. See Fig. \ref{workflow} for an illustration.
+Our proposed workflow can be broadly divided into two main parts: {\bf Aspect Discovery} and {\bf Aspect-Specific Sentiment Classification}. See Fig. \ref{workflow} for an illustration.
 
 \begin{figure}[ht]
 \begin{center}
@@ -93,9 +93,10 @@ Our proposed workflow can be divided into two main parts: {\bf Aspect Discovery}
 \end{figure}
 
 \subsection{Aspect Discovery}
+The first half of our workflow involves discovering a list of aspects specific to the products in a particular product category given a list of seed aspects.
 
 \subsubsection{Generating Seed Aspects}
-The first part of our workflow involves generating a list of seed aspects. These seed aspects do not require domain-specific knowledge and can be fairly general (the idea is that any layperson should be able to generate these words about most product categories). In our case, we generated 56 seed aspects specific to electronic products such as \textit{screen quality, construction, durability, cost}. 
+This step involves generating a list of seed aspects. These seed aspects do not require domain-specific knowledge and can be fairly general (the idea is that any layperson should be able to generate these words about most product categories). In our case, we generated 56 seed aspects specific to electronic products such as \textit{screen quality, construction, durability, cost}. 
 
 \subsubsection{Aspect Discovery}
 To generate aspects in an unsupervised fashion, we trained a \texttt{word2vec} model on our dataset and discovered neighboring aspects based on cosine distances to the seed aspects' word vector representations. Our intuition is that we can use similarities in a high dimensional word vector embedding space to find closely related groups of words. Words may be grouped by syntactic class (e.g. nouns), by similarity in context (e.g. ``X is great"), or by other words that they co-occur with.
@@ -119,30 +120,33 @@ J(\theta) &= -\sum_{k=1}^{2} y_k log \hat{y}_k
 where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss for the training set, we average $J(\theta)$ with respect to each training example.
 
 \subsection{Aspect-Specific Sentiment Classification}
-% TODO
+The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good intuition would be that sentiment words closer to a particular aspect should be attributed to that aspect. Hence, models should be able to make use of local context to help in attributing sentiment.
+
 \subsubsection{Pre-labeling using Lexicon-based Heuristic}
+Using the expanded list of aspects (from the aspect discovery process), we label them using a heuristic based on a sentiment lexicon by Hu and Liu [Bing]. We obtained phrases (i.e. training examples) consisting of an identified aspect in the middle, surrounded by a context window of $m$ words on both sides. We also padded these phrases with sentence start and end tags and zero-padded them to a fixed length. Next, we label all unigrams in these phrases with their unigram-specific sentiment according to the lexicon by [Bing] and average them to obtain the label for each phrase. Having pre-labeled out phrases according to this heuristic, we are now better able to refine the labels manually in less time (and hence less cost).
 
 \subsubsection{Sentiment Classification}
-
-The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good ``heuristic" would be that sentiment words closer to a particular aspect should be attributed to that aspect. Hence, models should be able to make use of local context to help in sentiment attribution.
-
-We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10], who reported excellent results in sentence classification on many tasks, including sentiment analysis. We model our architecture, shown in Figure \ref{architecture} on [10].
-
-
-
-
-%An additional step would be to label all unigrams with a sentiment analysis lexicon (Bing Liu's sentiment lexicon) or the Sentiment pipeline in CoreNLP [7]. With the aspect-labels from the previous part, we would have a dataset labeled with aspect and (unigram-) sentiment. Next, we build off and improve on the model in [6]: we will use a RNTN or improved architecture to extract (aspect, aspect-specific sentiment) tuples from the data. Finally, we will have a summarization of aspect-related sentiment via visualization of our output, in terms of a word cloud of important aspects (e.g., sized by word frequency and colored by sentiment). 
-
-
-
-
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\columnwidth]{model_architecture.png}
 \end{center}
-\caption{CNN Model Architecture, modeled after Kim [10]. The input is an $n$ word context, where $n$ is odd, and the center word is an identified aspect. The input is convolved with different filter sizes (3,4,5) with $w$ features. It then undergoes max-pooling (1) to pick the strongest feature.}
+\caption{CNN Model Architecture as documented Kim [10]. The input is an $2m+1$ word context, where $m$ is the number of words on each side of the aspect, and the center word is an identified aspect. The input is convolved with different filter sizes with $w$ features and is then max-pooled.}
 \label{architecture}
 \end{figure}
+
+We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10], who reported excellent results in sentence classification on many tasks including sentiment analysis. We model our architecture as per [10] and as reproduced in Figure \ref{architecture}. This model has one convolutional layer trained on top of pre-trained word vectors obtained from a \texttt{word2vec} model trained on our dataset. However, unlike [10], our CNN uses only a single non-static channel which allows the word vectors to be further finetuned.
+
+Our input is represented as:
+\begin{align}
+	x_{1:2m+1} = x_1 \oplus x_2 \oplus \ldots \oplus x_{m+1} \oplus \ldots \oplus x_{2m+1}
+\end{align}
+where $\oplus$ is the concatenation operator, $n$ is the sentence length, $x_i \in \mathbb{R}^k$ is a k-dimensional word vector of the i-th word, and $x_{m+1}$ is the aspect word. Convolution using multiple filters $w \in \mathbb{R}^{hk}$ of various sizes $h$ is applied to the input to produce new features. A feature $c_i$ is generated from a window of words $x_{i:i+h-1}$ as such:
+\begin{align}
+c_i = ReLU(\textbf{w} \cdot \textbf{x}_{i:i+h-1} + b)
+\end{align}
+This filter is applied across the input phrase to produce a feature map $\textbf{c} = [c_1, c_2, \ldots, c_{n-h+1}] \in \mathbb{R}^(n-h+1)$. We then apply a max-over-time pooling operation over each feature map and retain the maximum value $\hat{c} = max \{\textbf{c}\}$ for each filter.
+
+Lastly, we employ dropout [iii] in the fully connected layer and take the softmax output to obtain the predictions for all five sentiment classes.
 
 
 \section{Experimental Results} 
@@ -264,6 +268,8 @@ We would like to acknowledge funding for computing resources provided by the Dee
 [i] Mikolov, T. \& Chen, K. \& Corrado, G. \& Dean, J. (2013). Efficient Estimation of Word Representations in Vector Space. In Proceedings of Workshop at ICLR, 2013.
 
 [ii] Mikolov, T. \& Chen, K. \& Corrado, G. \& Dean, J. (2013). Distributed Representations of Words and Phrases and their Compositionality. In Proceedings of NIPS, 2013.
+
+[iii] Hinton, G., Srivastava, N., Krizhevsky, A., Sutskever, I., Salakhutdinov, R. (2012). Improving neural networks by preventing co-adaptation of feature detectors. CoRR, abs/1207.0580.
 
 [1] Titov, I., \& McDonald, R. T. (2008). A Joint Model of Text and Aspect Ratings for Sentiment Summarization. In {\it ACL} (Vol. 8, pp. 308-316).
 
