@@ -76,7 +76,7 @@ The second component, \textit{aspect-specific sentiment classification} involves
 % TODO: Desmond to add more references?
 
 \section{Dataset}
-The dataset that we used consists of 7.6 million reviews of electronic products from Amazon.com [8]. These reviews comprise 39.4 million sentences. Each review is only labeled with the document-level 5 star rating, which we did not end up using as it was too coarse. We focused our attention only on the raw natural language text, which is unlabeled.
+The dataset that we used consists of 7.6 million reviews (39.4M sentences) of electronic products from Amazon.com [8]. Each review is labeled with the document-level 5 star rating, which we did not end up using as it was too coarse. We focused our attention on the raw natural language text.
 
 \textbf{Preprocessing.} We tokenized our corpus using NLTK's punkt tokenizer [9] for sentence splitting. We then removed all non-alphanumerical characters and replaced all digits with \texttt{DG}. Finally, we performed collocation detection to detect common bigrams.
 
@@ -95,14 +95,11 @@ Our proposed workflow can be broadly divided into two main parts: {\bf Aspect Di
 \subsection{Aspect Discovery}
 The first half of our workflow involves discovering a list of aspects specific to the products in a particular product category given a list of seed aspects.
 
-\subsubsection{Generating Seed Aspects}
-This step involves generating a list of seed aspects. These seed aspects do not require domain-specific knowledge and can be fairly general (the idea is that any layperson should be able to generate these words about most product categories). In our case, we generated 56 seed aspects specific to electronic products such as \textit{screen quality, construction, durability, cost}. 
+\textbf{Generating Seed Aspects}. This step involves generating a list of seed aspects. These seed aspects do not require domain-specific knowledge and can be fairly general (the idea is that any layperson should be able to generate these words about most product categories). In our case, we generated 56 seed aspects specific to electronic products such as \textit{screen quality, construction, durability, cost}. 
 
-\subsubsection{Aspect Discovery}
-To generate aspects in an unsupervised fashion, we trained a \texttt{word2vec} model on our dataset and discovered neighboring aspects based on cosine distances to the seed aspects' word vector representations. Our intuition is that we can use similarities in a high dimensional word vector embedding space to find closely related groups of words. Words may be grouped by syntactic class (e.g. nouns), by similarity in context (e.g. ``X is great"), or by other words that they co-occur with.
+\textbf{Aspect Discovery}. To generate aspects in an unsupervised fashion, we trained a \texttt{word2vec} model on our dataset and discovered neighboring aspects based on cosine distances to the seed aspects' word vector representations. Our intuition is that we can use similarities in a high dimensional word vector embedding space to find closely related groups of words. Words may be grouped by syntactic class (e.g. nouns), by similarity in context (e.g. ``X is great"), or by other words that they co-occur with.
 
-\subsubsection{Window Aspect Classifier}
-We used the output from the aspect discovery process as labels to train a sliding window-based aspect classifier. This allows us to run the classifier on the raw review text to extract more aspects that we might have missed out in the discovery process, or to extract aspects from other product categories.
+\textbf{Window Aspect Classifier}. We used the output from the aspect discovery process as labels to train a sliding window-based aspect classifier. This allows us to run the classifier on the raw review text to extract more aspects that we might have missed out in the discovery process, or to extract aspects from other product categories.
 
 There are two classes: \texttt{ASP} for aspects and \texttt{O} for words that are not aspects.
 
@@ -114,7 +111,7 @@ where $x_{t-1}, x_t, x_{t+1}$ are one-hot vectors into a word-representation mat
 \begin{align}
 h &= tanh(W x^{(t)} + b_1)\\
 \hat{y} &= softmax (Uh + b_2)\\
-J(\theta) &= -\sum_{k=1}^{2} y_k log \hat{y}_k
+J(\theta) &= -\sum_{k=1}^{2} y_k \log \hat{y}_k
 \end{align}
 
 where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss for the training set, we average $J(\theta)$ with respect to each training example.
@@ -122,10 +119,10 @@ where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss fo
 \subsection{Aspect-Specific Sentiment Classification}
 The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good intuition would be that sentiment words closer to a particular aspect should be attributed to that aspect. Hence, models should be able to make use of local context to help in attributing sentiment.
 
-\subsubsection{Pre-labeling using Lexicon-based Heuristic}
+\textbf{Pre-labeling using Lexicon-based Heuristic}.
 Using the expanded list of aspects (from the aspect discovery process), we label them using a heuristic based on a sentiment lexicon by Hu and Liu [Bing]. We obtained phrases (i.e. training examples) consisting of an identified aspect in the middle, surrounded by a context window of $m$ words on both sides. We also padded these phrases with sentence start and end tags and zero-padded them to a fixed length. Next, we label all unigrams in these phrases with their unigram-specific sentiment according to the lexicon by [Bing] and average them to obtain the label for each phrase. Having pre-labeled out phrases according to this heuristic, we are now better able to refine the labels manually in less time (and hence less cost).
 
-\subsubsection{Sentiment Classification}
+
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\columnwidth]{model_architecture.png}
@@ -134,7 +131,7 @@ Using the expanded list of aspects (from the aspect discovery process), we label
 \label{architecture}
 \end{figure}
 
-We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10], who reported excellent results in sentence classification on many tasks including sentiment analysis. We model our architecture as per [10] and as reproduced in Figure \ref{architecture}. This model has one convolutional layer trained on top of pre-trained word vectors obtained from a \texttt{word2vec} model trained on our dataset. However, unlike [10], our CNN uses only a single non-static channel which allows the word vectors to be further finetuned.
+\textbf{Sentiment Classification}. We decided upon a Convolutional Neural Network (CNN) Model based after Kim [10], who reported excellent results in sentence classification on many tasks including sentiment analysis. We model our architecture as per [10] and as reproduced in Figure \ref{architecture}. This model has one convolutional layer trained on top of pre-trained word vectors obtained from a \texttt{word2vec} model trained on our dataset. However, unlike [10], our CNN uses only a single non-static channel which allows the word vectors to be further finetuned.
 
 Our input is represented as:
 \begin{align}
@@ -181,7 +178,7 @@ As our dataset is heavily unbalanced (towards having 95\% positive \texttt{ASP} 
 \begin{center}
 \begin{tabular}{lll}
 \multicolumn{1}{c}{\bf Aspect Detection Model}  &\multicolumn{1}{c}{\bf Recall}  &\multicolumn{1}{c}{\bf Precision} \\ \hline
-Sliding Window Classifier \textsuperscript{1} & 92.45\%  & 99.15\%\\
+Sliding Window Classifier & 92.45\%  & 99.15\%\\
 &\\
 \end{tabular}
 \begin{tabular}{lll}
@@ -200,7 +197,7 @@ Using the aforementioned steps, we obtained the 6,000 labeled examples which con
 
 Our lexicon-based heuristic has a \textbf{75.25\%} classification accuracy with 3 classes, i.e. only 24.75\% of the 6,000 examples has to be re-labeled into 5 classes. This pre-labeling greatly sped up our labeling process to approximately 8 man-hours for all 6,000 examples. This heuristic also provides us with a baseline accuracy for our CNN sentence classification model.
 
-Our decision for labeling 6,000 examples was so that it can be comparable to existing sentiment-labeled datasets out there (e.g. the Beer Advocate dataset and Camera Review dataset reported in [6] had about 8,000 and 4,000 labeled sentences respectively).
+Our labeled dataset of 6,000 examples is comparable to existing available aspect-sentiment datasets (e.g. the Beer Advocate dataset and Camera Review dataset reported in [6] had 8,000 and 4,000 labeled examples respectively).
 
 % Socher's model (down the rows) vs. human labels. So there were 16 instances that human says 2 and model says 1.
 %							True Labels
@@ -247,9 +244,7 @@ semi-supervised approach (less labeling cost)
 
 \section{Conclusion}
 
-conclusion
-
-cost efficient, time consuming
+The proliferation of customer reviews on websites such as Amazon.com has made it theoretically possible, with the right tools, to leverage the ``wisdom of the crowd" when making purchase decisions. Those tools do not yet exist, because of the absence of large labeled training data with which to train supervised models. In this paper, we propose a workflow that has the potential to make some headway in this area. Our model provides a cost and time efficient way of extracting high-quality aspect-level sentiment from natural text. This opens the possibility of future consumer applications that aggregates reviews across different sources (e.g. review websites or microblogs), and will be a huge boon to the e-commerce industry.
 
 
 
