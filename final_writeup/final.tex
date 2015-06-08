@@ -162,7 +162,7 @@ Lastly, we employ dropout [iii] in the fully connected layer and take the softma
 \label{aspectFig}
 \end{figure}
 
-We trained three different \texttt{word2vec} models. The most successful model was trained using the CBOW (continuous bag-of-words) model with a window size of 10 and feature dimension size of 300. We also ignored all words with total frequency count below 40 (this helped to remove many misspellings and typos). We determined the performance of each model by querying the model with various aspects common to electronic products (e.g. "portability", "screen quality", etc) and returning the top-$n$ closest attributes based on cosine similarity.
+We trained three different \texttt{word2vec} models. The most successful model was trained using the CBOW (continuous bag-of-words) model with a window size of 10 and feature dimension size of 300. We also ignored all words with total frequency count below 40 (this helped to remove many misspellings and typos). We determined the performance of each model by querying the model with various aspects common to electronic products (e.g. "portability", "screen quality", etc) and returning the top-$n$ closest attributes based on cosine similarity. We also found that training our own \texttt{word2vec} model is essential for good performance in this case as many of our vocabulary contain very niche words specific to electronic products (e.g. "gold\_plated", "atx\_motherboard", "sli").
 
 Figure \ref{aspectFig} illustrates the top-$n$ closest results for the seed words \texttt{portability}, \texttt{contrast}, and \texttt{tripod}. After qualitative evaluation, we found that $n=5$ is a good number that maintains the quality of aspects while allowing for good discovery.
 
@@ -173,7 +173,7 @@ We also found that out of 336 discovered aspects (56*5 neighboring aspects + 56 
 \subsubsection{Window Aspect Classifier}
 We performed hyperparameter tuning on our window classifier and found that window of size 5, regularization strength of 0.001 and learning rate of 0.01 using a minibatch schedule produced the best performing model. This was trained on a randomly sampled subset of 20,000 sentences, each of which containing at least one aspect. The training dataset consists of 48,368 \texttt{ASP}-labeled words and 848,218 \texttt{O}-labeled words. 
 
-As our dataset is heavily unbalanced (towards having 95\% positive \texttt{ASP} examples), we evaluate our window aspect classifier primarily by its abiliity to recall positive example (i.e. intuitively the ability of the classifier to find all the aspects). In this case, our best performing classifier has an \texttt{ASP} recall of \textbf{92.45\%} and a precision of \textbf{99.15\%}, i.e. it is capable of finding 92.45\% of the aspects and practically did not mislabel any non-aspect words as aspects.
+As our dataset is heavily unbalanced (towards having 95\% positive \texttt{ASP} examples), we evaluate our window aspect classifier primarily by its ability to recall positive example (i.e. intuitively the ability of the classifier to find all the aspects). In this case, our best performing classifier has an \texttt{ASP} recall of \textbf{92.45\%} and a precision of \textbf{99.15\%}, i.e. it is capable of finding 92.45\% of the aspects and practically did not mislabel any non-aspect words as aspects.
 
 \subsection{Aspect-specific Sentiment Classification}
 
@@ -221,7 +221,7 @@ The difference in accuracy was largely a result of testing the model out of doma
 
 \subsection{Qualitative Evaluation of Overall Method}
 
-
+\subsubsection{Aggregated Aspect-specific Reviews}
 \begin{figure}[ht]
 \begin{center}
 \includegraphics[width=\columnwidth]{productCloud.png}
@@ -230,22 +230,24 @@ The difference in accuracy was largely a result of testing the model out of doma
 \label{productFig}
 \end{figure}
 
-We next performed a qualitative evaluation: we considered reviews of two popular cell phones, the Samsung Galaxy S6 and the Apple iPhone 6. We provide a visualization of the averaged sentiment in Fig. \ref{productFig}, where the word size reflects the frequency of occurrences of that aspect in the reviews, and the colors represented the sentiment associated with it. By far the aspect of the Galaxy S6 had the most number of mentions was the battery life, rated negatively, and very few of the reviews mentioned cost. In contrast, most reviews of the iPhone 6 unanimously decried its price, and when its battery life was mentioned, opinions were mixed. Thus, a consumer who might be deciding between the Galaxy S6 and the iPhone 6 would be able to weigh specific features (e.g. how important is battery life for this consumer) when making a purchase decision.
+We next performed a qualitative evaluation of a potential application of our model: aggregated aspect-specific reviews. We considered reviews of two popular cell phones, the Samsung Galaxy S6 and the Apple iPhone 6, and provided a visualization of the averaged sentiment in Fig. \ref{productFig}, where the word size reflects the frequency of occurrences of that aspect in the reviews, and the colors represented the sentiment associated with it. 
 
-One source of aspect-specific reviews are specialized websites that offer ``expert reviews", and often offers ratings of individual aspects. These reviews, however, are based on the opinion of one person or a small team of reviewers, and may or may not be biased (considering that some of these reviewers are given free products to review). As a comparison, we examined reviews of the same two products on cnet.com, a website that specializes in electronics product reviews. The Galaxy S6 on cnet.com received an 8 (out of 10) on Battery life, 9 on Features, 9 on Design, 8 on Camera and 9 on Performance. The editor's rating was 8.9 overall (4.5 stars), and the average user review was about 3 stars from 41 user reviews. The iPhone 6 was given a 9/10 for each of Design, Features and Performance, and an overall editor rating of 9/10, or 4.5 stars, compared with about 4 stars from 43 user reviews. Interestingly, the cnet editor's overall ratings for the Galaxy S6 seemed to diverge with the average cnet user rating (4.5 vs. 3). Moreover, the cnet editor's high ranking of the battery life seemed at odds with the general sentiment of the average Amazon user. This suggests some discrepancy between ``expert reviewers" and ``average reviewers". Additionally, the number of aspects reviewed even across cnet.com is not standardized, with the iPhone 6 being rated on fewer aspects than the Galaxy S6.
+The visualization in Fig. \ref{productFig} shows that the single most talked about aspect of the Galaxy S6 is its battery life, which also happens to be rated rather negatively. In contrast, "battery life" is less mentioned in the reviews of the iPhone 6 and is rated more positively. The biggest complaint of the iPhone 6 seems to be its cost, while that was mentioned a lot less in the reviews of the Galaxy S6 (below the threshold we set for our visualization). Thus, a consumer who might be deciding between the Galaxy S6 and the iPhone 6 would be able to weigh specific features (e.g. how important is battery life for this consumer) very quickly and accurately without having to read through multiple (and often lengthy) reviews.
 
-Below we describe some qualitative errors we noticed that our models were performing.
+One other source of aspect-specific reviews are specialized websites that offer ``expert reviews", and often offers ratings of individual (but broader) aspects. These reviews, however, are based on the opinion of one person or a small team of reviewers and are inherently biased. As a comparison, we examined reviews of the same two products on cnet.com, a website that specializes in electronics product reviews. The Galaxy S6 on cnet.com received an 8 (out of 10) on Battery life, 9 on Features, 9 on Design, 8 on Camera and 9 on Performance. The editor's rating was 8.9 overall (4.5 stars), and the average user review was about 3 stars from 41 user reviews. The iPhone 6 was given a 9/10 for each of Design, Features and Performance, and an overall editor rating of 9/10, or 4.5 stars, compared with about 4 stars from 43 user reviews. Interestingly, the cnet editor's overall ratings for the Galaxy S6 seemed to diverge with the average cnet user rating (4.5 vs. 3). Moreover, the cnet editor's high rating of the Galaxy's battery life seemed at odds with the general sentiment of the average Amazon user. This suggests some discrepancy between ``expert reviewers" and ``average reviewers" (i.e. the consumers). This application also suggests that leveraging the "wisdom of the crowd" might provide more accurate reviews of a product than reviews from individual ``experts".
 
-One common aspect that our method identified was \texttt{speed}, in terms of computer or processing speed. This also led to the discovery of \texttt{speed\_limit}, in the context of GPS reviews where GPSes are programmed with the speed limit of roads. While it might be arguable that knowing the road speed limit is a relevant aspect of a GPS, this highlighted the fact that our model might not be able to capture instances where words have different meanings in different contexts.
+\subsubsection{Error Analysis}
+Below we describe some of the bigger errors in our approach.
 
-One problem with aspect-specific sentiment analysis in product reviews is that many reviewers discuss how the new product fares in relation to an older, similar product they owned. For example, phrases like ``my old laptop was better" seems semantically positive, but reflects negative sentiment with respect to the product being discussed. We hoped that increasing the context window would allow the model to pick up comparative words (especially that interacts with which is the subject and object of comparison), but more analysis has to be done to verify if this was learnt.
+One common problem with the discovered aspects is the vagueness of some of the aspects. For instance, \texttt{sd\_card} was a fairly frequent aspect that came up for a Galaxy S6 smartphone. Upon further inspection of t
+he reviews, we found that \texttt{sd\_card} referred to the \textit{lack} of a microSD card slot which prior iterations of the Galaxy had.
 
+We also noticed that a sentence classifier using CNNs may be inadequate in capturing the subtlety in sentiment expressed in product reviews (as compared to hierarchical models such as [7]). For example, phrases like ``my old laptop was better" seems scored positively on our model, but actually reflects negative sentiment with respect to the product being discussed.
 
 \section{Future Work}
 We would like to explore a semi-supervised or active learning approach as an alternative to labeling large quantities of examples after pre-labeling for training a fully supervised model. In this case, we will have to label significantly less examples which will in turn save us time and cost. The proposed method as a whole would also be more cost efficient and scalable.
 
-semi-supervised approach (less labeling cost)
-
+We also intend to develop our work in this report as a web application or service to provide consumers with aggregated aspect-specific sentiments of products in an intuitive and concise fashion.
 
 \section{Conclusion}
 
