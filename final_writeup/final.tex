@@ -194,7 +194,7 @@ Sliding Window Classifier \textsuperscript{1} & 92.45\%  & 99.15\%\\
 \subsubsection{Pre-labeling}
 Using the aforementioned steps, we obtained the 6,000 labeled examples which consisted of an identified aspect in the middle, surrounded by a context window of 5 words on both sides. We padded these phrases with sentence start and end tags and zero vectors. Next, we manually re-labeled these 6,000 examples on a 5 point scale, corresponding to Very Negative, Negative, Neutral, Positive, and Very Positive. 
 
-Our lexicon-based heuristic has an \textbf{75.25\%} classification accuracy with 3 classes, i.e. only 24.75\% of the 6,000 examples has to be re-labeled into 5 classes. This pre-labeling greatly sped up our labeling process to approximately 8 man-hours for all 6,000 examples. This heuristic also provides us with a baseline accuracy for our CNN sentence classification model.
+Our lexicon-based heuristic has a \textbf{75.25\%} classification accuracy with 3 classes, i.e. only 24.75\% of the 6,000 examples has to be re-labeled into 5 classes. This pre-labeling greatly sped up our labeling process to approximately 8 man-hours for all 6,000 examples. This heuristic also provides us with a baseline accuracy for our CNN sentence classification model.
 
 Our decision for labeling 6,000 examples was so that it can be comparable to existing sentiment-labeled datasets out there (e.g. the Beer Advocate dataset and Camera Review dataset reported in [6] had about 8,000 and 4,000 labeled sentences respectively).
 
@@ -217,22 +217,25 @@ The difference in accuracy was largely a result of testing the model out of doma
 
 \subsection{Qualitative Evaluation of Overall Method}
 
-\textbf{Evaluation}: We will construct word cloud visualizations color coded to express sentiment. We will also perform comparisons with ``expert review" sites like CNET and DPReview (e.g. DPReview specifically rates digital cameras along certain chosen dimensions).
 
+\begin{figure}[ht]
+\begin{center}
+\includegraphics[width=\columnwidth]{productCloud.png}
+\end{center}
+\caption{Word-cloud visualizations of how \texttt{(aspect, sentiment)} tuples across multiple products can be summarized. The size of the aspect is proportional to the frequency, while the colors represent sentiment, interpolated between blue (positive) and red (negative). }
+\label{productFig}
+\end{figure}
 
-compare with google product reviews / cnet reviews
+We next performed a qualitative evaluation: we considered two popular products, the Samsung Galaxy S6 and the Apple iPhone 6. We handmade a visualization of the averaged 
 
-Error analysis (but actually we don't know if our model fails on these, we don't really have item level aspect
+One source of aspect-specific reviews are specialized websites that offer ``expert reviews", and often offers ratings of aspects. As a comparison, we can look at reviews of the same two products on CNet.com, a website that specializes in electronics product reviews. The Galaxy S6 on cnet.com received an 8/10 on Battery life, 9 on Features, 9 on Design, 8 on Camera and 9 on Performance. The editor's rating was 8.9 overall (4.5 stars), and the average user review was about 3 stars from 41 user reviews. The iPhone 6 was given a 9 for each of Design, Features and Performance, and an overall editor rating of 9/10, or 4.5 stars, compared with about 4 stars from 43 user reviews. Interestingly, the cnet editor's overall ratings for the Galaxy S6 seemed to diverge with the average cnet user rating (4.5 vs 3). Moreover, the cnet editor's high ranking of the battery life seemed at odds with the general sentiment of the average Amazon user. This suggests some discrepancy between ``expert reviewers" and ``average reviewers". Additionally, the number of aspects reviewed even across cnet.com is not standardized, with the iPhone 6 being rated on fewer aspects than the Galaxy S6.
+
+Below we describe some qualitative errors we noticed that our models were performing.
 
 One common aspect that our method identified was \texttt{speed}, in terms of computer or processing speed. This also led to the discovery of \texttt{speed\_limit}, in the context of GPS reviews where GPSes are programmed with the speed limit of roads. While it might be arguable that knowing the road speed limit is a relevant aspect of a GPS, this highlighted the fact that our model might not be able to capture instances where words have different meanings in different contexts.
 
-One problem with aspect-specific sentiment analysis in product reviews is that many reviewers discuss how the new product fares in relation to an older, similar product they owned. For example, phrases like ``my old laptop was better" seems semantically positive, but reflects negative sentiment with respect to the product being discussed. We hoped that increasing the context window would allow the model to pick up comparative words (especially that interacts with which is the subject and object of comparison).
+One problem with aspect-specific sentiment analysis in product reviews is that many reviewers discuss how the new product fares in relation to an older, similar product they owned. For example, phrases like ``my old laptop was better" seems semantically positive, but reflects negative sentiment with respect to the product being discussed. We hoped that increasing the context window would allow the model to pick up comparative words (especially that interacts with which is the subject and object of comparison), but more analysis has to be done to verify if this was learnt.
 
-
-
-word cloud
-size = frequency of aspect over several reviews
-color = valence
 
 \section{Future Work}
 semi-supervised approach (less labeling cost)
