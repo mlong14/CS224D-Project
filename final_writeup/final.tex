@@ -118,13 +118,11 @@ J(\theta) &= -\sum_{k=1}^{2} y_k log \hat{y}_k
 
 where $y \in \mathbb{R}^2$ is a one-hot label vector. When computing the loss for the training set, we average $J(\theta)$ with respect to each training example.
 
-\subsubsection{NER Model?}
+\subsection{Aspect-Specific Sentiment Classification}
+% TODO
+\subsubsection{Pre-labeling}
 
-NER Model architecture
-
-Window Aspect Classifier
-
-\subsection{Aspect-Specific Sentiment Extraction}
+\subsubsection{Sentiment Classification}
 
 The second half of our workflow involved sentiment analysis given identified aspects. Our intuition for this part stems from locality: if there are multiple sentiment and multiple aspect words within a sentence, then a good ``heuristic" would be that sentiment words closer to a particular aspect should be attributed to that aspect. Hence, models should be able to make use of local context to help in sentiment attribution.
 
