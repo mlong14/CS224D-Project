@@ -54,9 +54,10 @@ Previous work in \textit{aspect-level sentiment analysis}---identifying the sent
 
 \section{Introduction}
 
-In this day and age, consumers have unprecedented access to a deluge of information about products---most notably, reviews written by other consumers---with which to make his or her purchase decisions. Unfortunately, sifting through hundreds of reviews across tens of different websites to acquire specific information about the product and its important attributes (e.g. \textit{battery life}, \textit{screen size}, or \textit{weight} in the case of electronic products) is a time-consuming chore. Aspect-level sentiment analysis would allow consumers to effortlessly compare general sentiments of various aspects of multiple similar products.
 
-However, one of the biggest challenges in training aspect-specific sentiment analysis models is the lack of large datasets labeled with sentiment on the aspect-level (for most datasets, sentiment labels exist on a document level). In this report, we propose a scalable method for extracting and classifying aspect-specific sentiments that is largely unsupervised. To do this, we tackle two separate but interconnected components of this problem: 1) discovery of aspects, and 2) aspect-specific sentiment classification.
+In this day and age, consumers have unprecedented access to a deluge of information about products---most notably, reviews written by other consumers---with which to make his or her purchase decisions. Unfortunately, sifting through hundreds of reviews across tens of different websites to acquire specific information about the product and its important attributes (e.g. \textit{battery life}, \textit{screen size}, or \textit{weight} in the case of electronic products) is a time-consuming chore. Fortunately, the proliferation of customer reviews on websites such as Amazon.com has made it possible, with the right tools, to leverage the ``wisdom of the crowd" when making purchase decisions. Aspect-level sentiment analysis would allow consumers to effortlessly compare relatively unbiased sentiments of various aspects of multiple similar products.
+
+However, one of the biggest challenges in training aspect-specific sentiment analysis models is the lack of large datasets labeled with sentiment on the aspect-level (for most datasets, sentiment labels exist on a document level). In this report, we propose a scalable and efficient method for extracting and classifying aspect-specific sentiments that is largely unsupervised. To do this, we tackle two separate but interconnected components of this problem: 1) discovery of aspects, and 2) aspect-specific sentiment classification.
 
 Within the context of a product review, the first component, \textit{aspect discovery}, involves identifying individual ``aspects" (which could be the product itself, or features/attributes of the product). This is made more difficult by the fact that relevant aspects might differ greatly across products in the same category. For example, aspects revelant to a cellular phone might be \textit{battery life}, \textit{screen size}, \textit{weight} and \textit{cost}. Not all these aspects are relevant across electronic items: for instance, \textit{screen size} might be irrelevant for a pair of headphones or a video game controller. We tackle this problem by generating new aspects from a list of seed words based on cosine similarities of the \texttt{word2vec} representations [1-2], and using the discovered aspects to train an aspect classifier.
 
@@ -236,8 +237,7 @@ One other source of aspect-specific reviews are specialized websites that offer 
 \subsubsection{Error Analysis}
 Below we describe some of the bigger errors in our approach.
 
-One common problem with the discovered aspects is the vagueness of some of the aspects. For instance, \texttt{sd\_card} was a fairly frequent aspect that came up for a Galaxy S6 smartphone. Upon further inspection of t
-he reviews, we found that \texttt{sd\_card} referred to the \textit{lack} of a microSD card slot which prior iterations of the Galaxy had.
+One common problem with the discovered aspects is the vagueness of some of the aspects. For instance, \texttt{sd\_card} was a fairly frequent aspect that came up for a Galaxy S6 smartphone. Upon further inspection of the reviews, we found that \texttt{sd\_card} referred to the \textit{lack} of a microSD card slot which prior iterations of the Galaxy had.
 
 We also noticed that a sentence classifier using CNNs may be inadequate in capturing the subtlety in sentiment expressed in product reviews (as compared to hierarchical models such as [7]). For example, phrases like ``my old laptop was better" seems scored positively on our model, but actually reflects negative sentiment with respect to the product being discussed.
 
@@ -248,16 +248,11 @@ We also intend to develop our work in this report as a web application or servic
 
 \section{Conclusion}
 
-The proliferation of customer reviews on websites such as Amazon.com has made it theoretically possible, with the right tools, to leverage the ``wisdom of the crowd" when making purchase decisions. Those tools do not yet exist, because of the absence of large labeled training data with which to train supervised models. In this paper, we propose a workflow that has the potential to make some headway in this area. Our model provides a cost and time efficient way of extracting high-quality aspect-level sentiment from natural text. This opens the possibility of future consumer applications that aggregates reviews across different sources (e.g. review websites or microblogs), and will be a huge boon to the e-commerce industry.
-
-
-
-
-
+Our model provides a cost and time efficient way of extracting high-quality aspect-level sentiment from the immense amount of unlabeled customer reviews available on online retailers such as Amazon. A lot of work is still required to productize a technology as described in this report, however, the results we have observed so far with our models have been greatly optimistic.  We believe that such an application that extracts and aggregates aspect-specific reviews across the Web would be a huge boon to both the electronic commerce industry and consumers alike.
 
 \subsubsection*{Acknowledgments}
 
-We would like to acknowledge funding for computing resources provided by the Deep Social Learning Lab at Stanford.
+We would like to thank Richard Socher and the teaching assistants of CS224D for all their help and the Stanford Deep Social Learning Lab for providing computing resources.
 
 \subsubsection*{References} % chronological. Use APA
 
